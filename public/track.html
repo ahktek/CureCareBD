@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>অর্ডার ট্র্যাকিং | CureCare</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .track-wrapper {
+      max-width: 720px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+    .track-card {
+      background: #fff;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 30px;
+      box-shadow: var(--shadow-md);
+    }
+    .track-input-group {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .track-status-stepper {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin: 36px 0 28px;
+    }
+    .track-status-stepper::before {
+      content: '';
+      position: absolute;
+      top: 18px;
+      left: 10%;
+      right: 10%;
+      height: 3px;
+      background: #e2e8f0;
+      z-index: 1;
+    }
+    .step-item {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      width: 80px;
+    }
+    .step-bubble {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #f1f5f9;
+      color: #64748b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 15px;
+      border: 3px solid #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      transition: var(--transition);
+    }
+    .step-item.completed .step-bubble {
+      background: var(--primary);
+      color: #fff;
+    }
+    .step-item.active .step-bubble {
+      background: var(--accent);
+      color: #000;
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.25);
+    }
+    .step-name {
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 8px;
+      color: var(--text-dark);
+    }
+    .order-info-box {
+      background: #f8fafc;
+      border-radius: var(--radius-md);
+      padding: 16px;
+      margin-top: 20px;
+      border: 1px solid var(--border-color);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="main-header">
+    <div class="container header-inner">
+      <a href="/" class="logo-container">
+        <div class="logo-icon">🌿</div>
+        <div class="logo-text">
+          <h1>Cure<span>Care</span></h1>
+          <p>Pure & Organic Wellness</p>
+        </div>
+      </a>
+      <a href="/" style="font-weight: 700; color: var(--primary); font-size: 14px;">← শপে ফিরে যান</a>
+    </div>
+  </header>
+
+  <div class="track-wrapper">
+    <div class="track-card">
+      <h2 style="font-size: 24px; font-weight: 800; color: var(--primary-dark); text-align: center;">লাইভ অর্ডার ট্র্যাকিং</h2>
+      <p style="text-align: center; color: var(--text-muted); font-size: 14px; margin-top: 4px;">আপনার অর্ডার নাম্বার (যেমন: CC-10021) অথবা মোবাইল নাম্বার লিখে সার্চ করুন</p>
+
+      <div class="track-input-group">
+        <input type="text" id="trackInput" class="form-control" placeholder="অর্ডার নাম্বার বা ফোন নাম্বার দিন..." style="font-size: 15px; padding: 12px;">
+        <button onclick="trackOrder()" class="btn-confirm-order" style="width: auto; padding: 12px 28px; white-space: nowrap;">
+          ট্র্যাক করুন
+        </button>
+      </div>
+
+      <div id="trackResult" style="display: none; margin-top: 30px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+          <div>
+            <span style="font-size: 12px; color: var(--text-muted);">অর্ডার নাম্বার:</span>
+            <h3 id="resOrderNum" style="color: var(--primary); font-family: 'Outfit';"></h3>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 12px; color: var(--text-muted);">তারিখ:</span>
+            <div id="resOrderDate" style="font-size: 13px; font-weight: 600;"></div>
+          </div>
+        </div>
+
+        <!-- 5 Steps Stepper -->
+        <div class="track-status-stepper" id="stepper">
+          <div class="step-item" id="step-pending">
+            <div class="step-bubble">1</div>
+            <div class="step-name">অর্ডার গৃহীত</div>
+          </div>
+          <div class="step-item" id="step-confirmed">
+            <div class="step-bubble">2</div>
+            <div class="step-name">নিশ্চিতকৃত</div>
+          </div>
+          <div class="step-item" id="step-processing">
+            <div class="step-bubble">3</div>
+            <div class="step-name">প্যাকেজিং</div>
+          </div>
+          <div class="step-item" id="step-shipped">
+            <div class="step-bubble">4</div>
+            <div class="step-name">কুরিয়ারে প্রেরিত</div>
+          </div>
+          <div class="step-item" id="step-delivered">
+            <div class="step-bubble">5</div>
+            <div class="step-name">ডেলিভার্ড</div>
+          </div>
+        </div>
+
+        <div id="courierTrackingBox" style="display: none; background: #e0f2fe; color: #0369a1; padding: 12px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; margin-bottom: 14px;">
+          🚚 কুরিয়ার ট্র্যাকিং কোড: <span id="courierTrackingCode"></span>
+        </div>
+
+        <div class="order-info-box">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 13px;">
+            <div><strong>গ্রাহকের নাম:</strong> <span id="resCustName"></span></div>
+            <div><strong>ফোন নাম্বার:</strong> <span id="resCustPhone"></span></div>
+            <div style="grid-column: 1/-1;"><strong>ডেলিভারি ঠিকানা:</strong> <span id="resCustAddr"></span></div>
+            <div><strong>পেমেন্ট মেথড:</strong> <span id="resPayMethod"></span></div>
+            <div><strong>মোট প্রদেয় বিল:</strong> <span id="resGrandTotal" style="font-weight: 800; color: var(--primary);"></span></div>
+          </div>
+
+          <div style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+            <strong style="font-size: 13px;">অর্ডারের পণ্যসমূহ:</strong>
+            <div id="resItemsList" style="margin-top: 8px;"></div>
+          </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 20px;">
+          <a id="btnViewInvoice" href="#" target="_blank" class="btn-order-now" style="display: inline-flex; border-radius: 9999px; padding: 10px 24px;">
+            📄 সম্পূর্ণ ক্যাশ মেমো / ইনভয়েস প্রিন্ট করুন
+          </a>
+        </div>
+      </div>
+
+      <div id="trackNotFound" style="display: none; text-align: center; padding: 30px; color: var(--danger);">
+        <p style="font-size: 16px; font-weight: 700;">কোনো অর্ডার পাওয়া যায়নি!</p>
+        <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">অনুগ্রহ করে সঠিক অর্ডার নাম্বার (যেমন: CC-10021) অথবা যে ফোন নাম্বার দিয়ে অর্ডার করেছিলেন তা প্রদান করুন।</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const initialQuery = urlParams.get('query');
+    if (initialQuery) {
+      document.getElementById('trackInput').value = initialQuery;
+      trackOrder();
+    }
+
+    async function trackOrder() {
+      const q = document.getElementById('trackInput').value.trim();
+      if (!q) return;
+
+      try {
+        const res = await fetch(`/api/orders/track/${encodeURIComponent(q)}`);
+        if (!res.ok) {
+          document.getElementById('trackResult').style.display = 'none';
+          document.getElementById('trackNotFound').style.display = 'block';
+          return;
+        }
+
+        const data = await res.json();
+        document.getElementById('trackNotFound').style.display = 'none';
+        renderTrackData(data);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderTrackData(order) {
+      document.getElementById('resOrderNum').textContent = order.order_number;
+      document.getElementById('resOrderDate').textContent = new Date(order.created_at).toLocaleDateString('bn-BD');
+      document.getElementById('resCustName').textContent = order.customer_name;
+      document.getElementById('resCustPhone').textContent = order.customer_phone;
+      document.getElementById('resCustAddr').textContent = order.customer_address;
+      document.getElementById('resPayMethod').textContent = order.payment_method === 'cod' ? 'ক্যাশ অন ডেলিভারি (COD)' : 'বিকাশ / নগদ';
+      document.getElementById('resGrandTotal').textContent = `৳${order.total}`;
+      document.getElementById('btnViewInvoice').href = `/invoice.html?order=${order.order_number}`;
+
+      // Courier tracking
+      const courierBox = document.getElementById('courierTrackingBox');
+      if (order.courier_tracking) {
+        document.getElementById('courierTrackingCode').textContent = order.courier_tracking;
+        courierBox.style.display = 'block';
+      } else {
+        courierBox.style.display = 'none';
+      }
+
+      // Stepper
+      const steps = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
+      const statusIdx = steps.indexOf(order.order_status);
+
+      steps.forEach((s, idx) => {
+        const el = document.getElementById(`step-${s}`);
+        el.className = 'step-item';
+        if (idx < statusIdx) {
+          el.classList.add('completed');
+        } else if (idx === statusIdx) {
+          el.classList.add('active');
+        }
+      });
+
+      // Items
+      document.getElementById('resItemsList').innerHTML = order.items.map(i => `
+        <div style="display: flex; justify-content: space-between; font-size: 13px; padding: 4px 0;">
+          <span>${i.name} (${i.weight}) × ${i.quantity}</span>
+          <strong>৳${i.price * i.quantity}</strong>
+        </div>
+      `).join('');
+
+      document.getElementById('trackResult').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

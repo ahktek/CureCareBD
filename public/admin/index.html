@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CureCare CMS | অ্যাডমিন কন্ট্রোল প্যানেল</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <link rel="stylesheet" href="/admin/admin.css">
+</head>
+<body>
+
+  <!-- ================= Login Authentication Screen ================= -->
+  <div id="authScreen" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span style="font-size: 38px;">🌿</span>
+        <h2>Cure<span>Care</span> CMS</h2>
+        <p>অ্যাডমিন ও ই-কমার্স কন্ট্রোল প্যানেল</p>
+      </div>
+
+      <div id="loginError" style="display: none; background: #fee2e2; color: #dc2626; padding: 10px; border-radius: 6px; font-size: 13px; margin-bottom: 16px;"></div>
+
+      <form id="loginForm">
+        <div style="margin-bottom: 14px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">ইউজারনেম</label>
+          <input type="text" id="loginUser" value="admin" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px;" required>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">পাসওয়ার্ড</label>
+          <input type="password" id="loginPass" value="curecare123" style="width: 100%; padding: 10px 12px; border: 1.5px solid #cbd5e1; border-radius: 6px;" required>
+        </div>
+
+        <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px; font-size: 15px;">
+          লগইন করুন →
+        </button>
+
+        <p style="text-align: center; margin-top: 16px; font-size: 12px; color: #64748b;">
+          ডিফল্ট ক্রেডেনশিয়াল: <strong>admin</strong> / <strong>curecare123</strong>
+        </p>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= Main Admin Layout ================= -->
+  <div id="adminLayout" class="admin-layout" style="display: none;">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar">
+      <div class="sidebar-header">
+        <span style="font-size: 26px;">🌿</span>
+        <h2>CureCare <span>CMS</span></h2>
+      </div>
+
+      <div class="sidebar-nav">
+        <div class="nav-item active" data-tab="dashboard">
+          <span>📊</span> ড্যাশবোর্ড ওভারভিউ
+        </div>
+        <div class="nav-item" data-tab="orders">
+          <span>📦</span> অর্ডার ম্যানেজমেন্ট
+        </div>
+        <div class="nav-item" data-tab="products">
+          <span>🌿</span> পণ্যসমূহ (Products)
+        </div>
+        <div class="nav-item" data-tab="categories">
+          <span>📁</span> ক্যাটাগরি
+        </div>
+        <div class="nav-item" data-tab="coupons">
+          <span>🏷️</span> ডিসকাউন্ট কুপন
+        </div>
+        <div class="nav-item" data-tab="banners">
+          <span>🖼️</span> স্লাইডার ব্যানার
+        </div>
+        <div class="nav-item" data-tab="settings">
+          <span>⚙️</span> স্টোর সেটিংস
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <a href="/" target="_blank" style="color: #10b981; display: flex; align-items: center; gap: 6px; font-weight: 600; text-decoration: none;">
+          <span>🌐</span> মূল ওয়েবসাইট দেখুন
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-title">
+          <h3 id="pageTitle">📊 ড্যাশবোর্ড ওভারভিউ</h3>
+        </div>
+        <div class="topbar-actions">
+          <div class="admin-user-badge">
+            <div class="user-avatar">👤</div>
+            <span id="adminUsername">Admin</span>
+          </div>
+          <button onclick="logout()" class="btn-sm btn-danger-sm">লগআউট</button>
+        </div>
+      </header>
+
+      <!-- Dynamic Page Views Container -->
+      <div class="admin-content">
+
+        <!-- ================= 1. Dashboard View ================= -->
+        <div id="view-dashboard" class="page-view active">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div>
+                <div class="stat-lbl">সর্বমোট রেভিনিউ</div>
+                <div class="stat-val" id="statRevenue" style="color: #059669;">৳0</div>
+              </div>
+              <div class="stat-icon" style="background: #d1fae5; color: #059669;">💰</div>
+            </div>
+
+            <div class="stat-card">
+              <div>
+                <div class="stat-lbl">মোট অর্ডার সংখ্যা</div>
+                <div class="stat-val" id="statTotalOrders">0</div>
+              </div>
+              <div class="stat-icon" style="background: #e0f2fe; color: #0284c7;">📦</div>
+            </div>
+
+            <div class="stat-card">
+              <div>
+                <div class="stat-lbl">পেন্ডিং অর্ডার</div>
+                <div class="stat-val" id="statPendingOrders" style="color: #d97706;">0</div>
+              </div>
+              <div class="stat-icon" style="background: #fef3c7; color: #d97706;">⏳</div>
+            </div>
+
+            <div class="stat-card">
+              <div>
+                <div class="stat-lbl">অ্যাক্টিভ পণ্য</div>
+                <div class="stat-val" id="statProductsCount">0</div>
+              </div>
+              <div class="stat-icon" style="background: #f3e8ff; color: #7e22ce;">🌿</div>
+            </div>
+          </div>
+
+          <!-- Recent Orders Table -->
+          <div class="card-table-wrapper">
+            <div class="card-header-bar">
+              <h4 style="font-size: 15px; font-weight: 700;">সর্বশেষ অর্ডারসমূহ</h4>
+              <button onclick="switchTab('orders')" class="btn-sm">সব অর্ডার দেখুন →</button>
+            </div>
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>অর্ডার নং</th>
+                  <th>গ্রাহকের নাম ও ফোন</th>
+                  <th>মোট বিল</th>
+                  <th>পেমেন্ট</th>
+                  <th>স্ট্যাটাস</th>
+                  <th>তারিখ</th>
+                  <th>অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="recentOrdersTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= 2. Orders View ================= -->
+        <div id="view-orders" class="page-view">
+          <div class="card-table-wrapper">
+            <div class="card-header-bar">
+              <div style="display: flex; gap: 10px; align-items: center; flex: 1;">
+                <input type="text" id="orderSearchInput" placeholder="অর্ডার নং, নাম বা ফোন নম্বর খুঁজুন..."
+                  class="btn-sm" style="width: 260px; padding: 8px 12px;" oninput="loadOrders('all', this.value)">
+                
+                <select class="btn-sm" style="padding: 8px 12px;" onchange="loadOrders(this.value, document.getElementById('orderSearchInput').value)">
+                  <option value="all">সকল অর্ডার</option>
+                  <option value="pending">Pending (পেন্ডিং)</option>
+                  <option value="confirmed">Confirmed (নিশ্চিত)</option>
+                  <option value="processing">Processing (প্যাকিং)</option>
+                  <option value="shipped">Shipped (কুরিয়ারে)</option>
+                  <option value="delivered">Delivered (ডেলিভার্ড)</option>
+                  <option value="cancelled">Cancelled (বাতিল)</option>
+                </select>
+              </div>
+              <button onclick="loadOrders()" class="btn-primary">🔄 রিফ্রেশ</button>
+            </div>
+
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>অর্ডার নং</th>
+                  <th>গ্রাহক ও ডেলিভারি ঠিকানা</th>
+                  <th>পণ্যসমূহ</th>
+                  <th>মোট বিল</th>
+                  <th>স্ট্যাটাস পরিবর্তন</th>
+                  <th>কুরিয়ার ট্র্যাকিং কোড</th>
+                  <th>অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTableTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= 3. Products View ================= -->
+        <div id="view-products" class="page-view">
+          <div class="card-table-wrapper">
+            <div class="card-header-bar">
+              <h4 style="font-size: 15px; font-weight: 700;">সকল পণ্য তালিকা</h4>
+              <button onclick="openAddProductModal()" class="btn-primary">
+                <span>➕</span> নতুন পণ্য যোগ করুন
+              </button>
+            </div>
+
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ছবি</th>
+                  <th>পণ্যের নাম</th>
+                  <th>ক্যাটাগরি</th>
+                  <th>মূল্য</th>
+                  <th>স্টক</th>
+                  <th>ভেরিয়েশন</th>
+                  <th>অ্যাকশন</th>
+                </tr>
+              </thead>
+              <tbody id="productsTableTbody"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= 4. Categories View ================= -->
+        <div id="view-categories" class="page-view">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+            <div class="card-table-wrapper">
+              <div class="card-header-bar">
+                <h4 style="font-size: 15px; font-weight: 700;">বর্তমান ক্যাটাগরি</h4>
+              </div>
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>আইকন</th>
+                    <th>বাংলা নাম</th>
+                    <th>ইংরেজি নাম</th>
+                    <th>স্লাগ</th>
+                    <th>অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="categoriesTableTbody"></tbody>
+              </table>
+            </div>
+
+            <div class="card-table-wrapper" style="padding: 20px;">
+              <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">নতুন ক্যাটাগরি যোগ করুন</h4>
+              <form onsubmit="addCategory(event)">
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ইংরেজি নাম *</label>
+                  <input type="text" id="catNameEn" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="e.g. Organic Honey" required>
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">বাংলা নাম</label>
+                  <input type="text" id="catNameBn" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="যেমন: খাঁটি মধু">
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ইমোজি / আইকন</label>
+                  <input type="text" id="catIcon" class="btn-sm" style="width: 100%; padding: 8px;" value="🌿">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">ক্যাটাগরি সেভ করুন</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= 5. Coupons View ================= -->
+        <div id="view-coupons" class="page-view">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+            <div class="card-table-wrapper">
+              <div class="card-header-bar">
+                <h4 style="font-size: 15px; font-weight: 700;">সকল অ্যাক্টিভ কুপন</h4>
+              </div>
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>কুপন কোড</th>
+                    <th>ডিসকাউন্ট</th>
+                    <th>মিনিমাম অর্ডার</th>
+                    <th>মোট ব্যবহার</th>
+                    <th>অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="couponsTableTbody"></tbody>
+              </table>
+            </div>
+
+            <div class="card-table-wrapper" style="padding: 20px;">
+              <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">নতুন কুপন কোড তৈরি করুন</h4>
+              <form onsubmit="addCoupon(event)">
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">কুপন কোড *</label>
+                  <input type="text" id="couponCode" class="btn-sm" style="width: 100%; padding: 8px; text-transform: uppercase;" placeholder="যেমন: EID2026" required>
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ডিসকাউন্ট টাইপ</label>
+                  <select id="couponType" class="btn-sm" style="width: 100%; padding: 8px;">
+                    <option value="percentage">শতাংশ (%) ছাড়</option>
+                    <option value="fixed">ফিক্সড টাকা (৳) ছাড়</option>
+                  </select>
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ছাড়ের পরিমাণ (টাকা বা %) *</label>
+                  <input type="number" id="couponValue" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="যেমন: 10" required>
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">সর্বনিম্ন অর্ডার ভ্যালু (টাকা)</label>
+                  <input type="number" id="couponMinSpend" class="btn-sm" style="width: 100%; padding: 8px;" value="500">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">কুপন যোগ করুন</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= 6. Banners View ================= -->
+        <div id="view-banners" class="page-view">
+          <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+            <div class="card-table-wrapper">
+              <div class="card-header-bar">
+                <h4 style="font-size: 15px; font-weight: 700;">হোম পেজ হিরো ব্যানার</h4>
+              </div>
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ব্যানার প্রিভিউ</th>
+                    <th>টাইটেল</th>
+                    <th>সাবটাইটেল</th>
+                    <th>বাটন টেক্সট</th>
+                    <th>অ্যাকশন</th>
+                  </tr>
+                </thead>
+                <tbody id="bannersTableTbody"></tbody>
+              </table>
+            </div>
+
+            <div class="card-table-wrapper" style="padding: 20px;">
+              <h4 style="font-size: 15px; font-weight: 700; margin-bottom: 14px;">নতুন ব্যানার তৈরি করুন</h4>
+              <form onsubmit="addBanner(event)">
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ইংরেজি টাইটেল *</label>
+                  <input type="text" id="bannerTitleEn" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="Pure Organic Living" required>
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">বাংলা টাইটেল</label>
+                  <input type="text" id="bannerTitleBn" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="সুস্বাস্থ্যের জন্য প্রাকৃতিক খাদ্য">
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">বাংলা সাবটাইটেল</label>
+                  <input type="text" id="bannerSubtitleBn" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="সুন্দরবনের খাঁটি মধু ও মদিনার খেজুর কিনুন বিশেষ ছাড়ে">
+                </div>
+                <div style="margin-bottom: 12px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ছবি URL *</label>
+                  <input type="url" id="bannerImage" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="https://..." required>
+                </div>
+                <div style="margin-bottom: 16px;">
+                  <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">বাটন টেক্সট</label>
+                  <input type="text" id="bannerBtnText" class="btn-sm" style="width: 100%; padding: 8px;" value="অর্ডার করুন এখনই">
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center;">ব্যানার সেভ করুন</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= 7. Settings View ================= -->
+        <div id="view-settings" class="page-view">
+          <div class="card-table-wrapper" style="padding: 24px; max-width: 760px;">
+            <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 18px;">ওয়েবসাইট ও স্টোর কনফিগারেশন</h4>
+            <form onsubmit="saveSettings(event)">
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                  <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">স্টোর নাম</label>
+                  <input type="text" id="setStoreName" class="btn-sm" style="width: 100%; padding: 8px;">
+                </div>
+                <div>
+                  <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">হেল্পলাইন ফোন</label>
+                  <input type="text" id="setPhone" class="btn-sm" style="width: 100%; padding: 8px;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                  <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">হোয়াটসঅ্যাপ নাম্বার</label>
+                  <input type="text" id="setWhatsApp" class="btn-sm" style="width: 100%; padding: 8px;">
+                </div>
+                <div>
+                  <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">অফিসিয়াল ইমেইল</label>
+                  <input type="email" id="setEmail" class="btn-sm" style="width: 100%; padding: 8px;">
+                </div>
+              </div>
+
+              <div style="margin-bottom: 14px;">
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">অফিসের ঠিকানা</label>
+                <input type="text" id="setAddress" class="btn-sm" style="width: 100%; padding: 8px;">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                  <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">ঢাকা সিটির ভিতরে ডেলিভারি চার্জ (টাকা)</label>
+                  <input type="number" id="setInsideDhaka" class="btn-sm" style="width: 100%; padding: 8px;">
+                </div>
+                <div>
+                  <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">ঢাকা সিটির বাইরে ডেলিভারি চার্জ (টাকা)</label>
+                  <input type="number" id="setOutsideDhaka" class="btn-sm" style="width: 100%; padding: 8px;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px;">
+                <div>
+                  <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">বিকাশ মার্চেন্ট / পার্সোনাল নম্বর</label>
+                  <input type="text" id="setBkash" class="btn-sm" style="width: 100%; padding: 8px;">
+                </div>
+                <div>
+                  <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">নগদ নম্বর</label>
+                  <input type="text" id="setNagad" class="btn-sm" style="width: 100%; padding: 8px;">
+                </div>
+              </div>
+
+              <div style="margin-bottom: 20px;">
+                <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">টপ নোটিশ / অ্যানাউন্সমেন্ট টেক্সট</label>
+                <input type="text" id="setAnnouncement" class="btn-sm" style="width: 100%; padding: 8px;">
+              </div>
+
+              <button type="submit" class="btn-primary" style="padding: 10px 24px;">সব সেটিংস সংরক্ষণ করুন</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= Add Product Modal ================= -->
+  <div class="admin-modal-overlay" id="addProductModal">
+    <div class="admin-modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px;">
+        <h3 style="font-size: 17px; font-weight: 700;">নতুন পণ্য যোগ করুন</h3>
+        <button onclick="closeAddProductModal()" style="border: none; background: none; font-size: 18px; cursor: pointer;">✕</button>
+      </div>
+
+      <form onsubmit="saveProduct(event)">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ইংরেজি নাম *</label>
+            <input type="text" id="prodNameEn" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="Raw Mustard Honey" required>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">বাংলা নাম</label>
+            <input type="text" id="prodNameBn" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="সরিষা ফুলের মধু">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ক্যাটাগরি</label>
+            <select id="prodCategory" class="btn-sm" style="width: 100%; padding: 8px;"></select>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">SKU কোড</label>
+            <input type="text" id="prodSku" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="CC-HNY-03">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">রেগুলার মূল্য (৳) *</label>
+            <input type="number" id="prodPrice" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="800" required>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">অফার মূল্য (৳)</label>
+            <input type="number" id="prodDiscountPrice" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="720">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">স্টক পরিমাণ</label>
+            <input type="number" id="prodStock" class="btn-sm" style="width: 100%; padding: 8px;" value="100">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ভেরিয়েশন সাইজ/ওজন</label>
+            <input type="text" id="prodVarWeight" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="যেমন: 500g">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ভেরিয়েশন মূল্য (৳)</label>
+            <input type="number" id="prodVarPrice" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="যেমন: 720">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ছবির লিংক (URL) *</label>
+          <input type="url" id="prodImage" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="https://images.unsplash.com/..." required>
+        </div>
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">সংক্ষিপ্ত বিবরণ</label>
+          <input type="text" id="prodShortDesc" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="এক লাইনের সারাংশ">
+        </div>
+
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">বিস্তারিত বর্ণনা ও স্বাস্থ্য উপকারিতা</label>
+          <textarea id="prodDesc" class="btn-sm" rows="3" style="width: 100%; padding: 8px;"></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px;">
+          <button type="button" onclick="closeAddProductModal()" class="btn-sm">বাতিল</button>
+          <button type="submit" class="btn-primary">পণ্য সেভ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

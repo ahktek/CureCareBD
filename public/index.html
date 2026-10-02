@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CureCare | বিশুদ্ধ ও স্বাস্থ্যকর প্রাকৃতিক অর্গানিক পণ্যের বিশ্বস্ত প্রতিষ্ঠান</title>
+  <meta name="description" content="CureCare - প্রিমিয়াম কোয়ালিটি সুন্দরবনের খাঁটি মধু, কাঠের ঘানিভাঙা সরিষার তেল, বিলোনা গাওয়া ঘি, মদিনার আজওয়া খেজুর ও সুপারফুড। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।">
+  <meta name="keywords" content="CureCare, অর্গানিক ফুড, সুন্দরবনের মধু, গাওয়া ঘি, সরিষার তেল, চিয়া সিড, আজওয়া খেজুর, বাংলাদেশ">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+  <!-- ================= Top Announcement Bar ================= -->
+  <div class="top-bar">
+    <div class="container top-bar-content">
+      <div class="top-announcement">
+        <span class="top-badge">জরুরি নোটিশ</span>
+        <span id="announcement-text">🎉 সারাদেশে দ্রুততম হোম ডেলিভারি ও ক্যাশ অন ডেলিভারি সুবিধা!</span>
+      </div>
+      <div class="top-links">
+        <a href="/track.html"><span>📍</span> অর্ডার ট্র্যাক করুন</a>
+        <a href="tel:+8801799880022" class="store-phone"><span>📞</span> +880 1799-880022</a>
+        <a href="/admin" target="_blank" style="color: #fde047; font-weight: 700;"><span>⚙️</span> এডমিন CMS</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= Main Header ================= -->
+  <header class="main-header">
+    <div class="container header-inner">
+      <!-- Logo -->
+      <a href="/" class="logo-container">
+        <div class="logo-icon">🌿</div>
+        <div class="logo-text">
+          <h1>Cure<span>Care</span></h1>
+          <p>Pure & Organic Wellness</p>
+        </div>
+      </a>
+
+      <!-- Live Search Bar -->
+      <div class="header-search">
+        <form class="search-form" onsubmit="event.preventDefault();">
+          <input type="text" id="searchInput" class="search-input" placeholder="পণ্য খুঁজুন (যেমন: মধু, ঘি, তেল, খেজুর, চিয়া সিড)..." autocomplete="off">
+          <button type="submit" class="search-btn" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          </button>
+        </form>
+        <!-- Live Search Dropdown -->
+        <div class="live-search-results" id="liveSearchResults"></div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="header-actions">
+        <a href="/track.html" class="action-btn">
+          <div class="action-icon">📦</div>
+          <div class="action-text">
+            <span>লাইভ স্ট্যাটাস</span>
+            <strong>ট্র্যাক অর্ডার</strong>
+          </div>
+        </a>
+
+        <button type="button" class="action-btn" onclick="openCartDrawer()">
+          <div class="action-icon">
+            🛒
+            <span class="badge-count cart-count">0</span>
+          </div>
+          <div class="action-text">
+            <span>শপিং কার্ট</span>
+            <strong>কার্ট দেখুন</strong>
+          </div>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= Category Horizontal Navigation Bar ================= -->
+  <nav class="category-nav-bar">
+    <div class="container cat-nav-inner" id="categoryNavBar">
+      <!-- Dynamic categories populated via JS -->
+    </div>
+  </nav>
+
+  <!-- ================= Hero Banner Carousel ================= -->
+  <section class="container hero-section">
+    <div class="hero-slider" id="heroSlider">
+      <!-- Dynamic slides populated via JS -->
+      <div class="slider-arrows">
+        <button class="slider-arrow" onclick="goToSlide((AppState.currentSlide - 1 + AppState.banners.length) % AppState.banners.length)">❮</button>
+        <button class="slider-arrow" onclick="goToSlide((AppState.currentSlide + 1) % AppState.banners.length)">❯</button>
+      </div>
+      <div class="slider-dots" id="sliderDots"></div>
+    </div>
+
+    <!-- Trust Features Bar -->
+    <div class="trust-features">
+      <div class="trust-card">
+        <div class="trust-icon">🌱</div>
+        <div class="trust-text">
+          <h4>১০০% খাঁটি ও অর্গানিক</h4>
+          <p>কোনো রাসায়নিক বা প্রিজারভেটিভ নেই</p>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🚚</div>
+        <div class="trust-text">
+          <h4>ক্যাশ অন ডেলিভারি</h4>
+          <p>পণ্য হাতে পেয়ে মূল্য পরিশোধের সুবিধা</p>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">🔄</div>
+        <div class="trust-text">
+          <h4>৭ দিনের রিটার্ন গ্যারান্টি</h4>
+          <p>পণ্য পছন্দ না হলে তাৎক্ষণিক পরিবর্তন</p>
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-icon">💬</div>
+        <div class="trust-text">
+          <h4>২৪/৭ সাপোর্ট ও পরামর্শ</h4>
+          <p>যেকোনো স্বাস্থ্য পরামর্শে সার্বক্ষণিক পাশে</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Featured Categories Section ================= -->
+  <section class="container section-padding">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="title-bar"></div>
+        <h2>জনপ্রিয় ক্যাটাগরি</h2>
+      </div>
+      <a href="#products-section" style="font-size: 13px; font-weight: 700; color: var(--primary);">সব দেখুন →</a>
+    </div>
+    <div class="categories-grid" id="featuredCategoriesGrid">
+      <!-- Populated via JS -->
+    </div>
+  </section>
+
+  <!-- ================= Main Products Showcase Section ================= -->
+  <section class="container section-padding" id="products-section">
+    <div class="section-header">
+      <div class="section-title">
+        <div class="title-bar"></div>
+        <h2>সর্বোচ্চ বিক্রিত পণ্যসমূহ (Top Selling)</h2>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <span style="font-size: 13px; color: var(--text-muted); align-self: center;">সরাসরি অর্ডার করতে "অর্ডার করুন" বাটনে ক্লিক করুন</span>
+      </div>
+    </div>
+    <div class="products-grid" id="productsGrid">
+      <!-- Populated via JS -->
+    </div>
+  </section>
+
+  <!-- ================= Customer Testimonials ================= -->
+  <section class="testimonials-section">
+    <div class="container">
+      <div class="section-header" style="justify-content: center; text-align: center; margin-bottom: 28px;">
+        <div>
+          <h2 style="font-size: 24px; font-weight: 800; color: var(--primary-dark);">আমাদের সন্তুষ্ট গ্রাহকদের মতামত</h2>
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">সারা দেশের হাজারো পরিবার CureCare এর খাঁটি অর্গানিক খাদ্যে আস্থা রেখেছেন</p>
+        </div>
+      </div>
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="testi-header">
+            <div class="testi-avatar">MR</div>
+            <div class="testi-user">
+              <h4>মাহফুজুর রহমান</h4>
+              <p>উত্তরা, ঢাকা ⭐⭐⭐⭐⭐</p>
+            </div>
+          </div>
+          <p class="testi-comment">"সুন্দরবনের খলিসা ফুলের মধুটা এক কথায় অসাধারণ! আসল মধুর যে নিজস্ব গন্ধ ও স্বাদ থাকে, CureCare এর মধুতে তা শতভাগ পেয়েছি। প্যাকেজিংও অনেক প্রিমিয়াম।"</p>
+        </div>
+        <div class="testimonial-card">
+          <div class="testi-header">
+            <div class="testi-avatar">TA</div>
+            <div class="testi-user">
+              <h4>তাহমিনা আক্তার</h4>
+              <p>ধানমন্ডি, ঢাকা ⭐⭐⭐⭐⭐</p>
+            </div>
+          </div>
+          <p class="testi-comment">"বাচ্চাদের জন্য খাঁটি বিলোনা গাওয়া ঘি এবং আজওয়া খেজুর নিয়েছিলাম। ঘির সুবাস পুরো ঘর মাতিয়ে তোলে। ডেলিভারিও মাত্র ২ দিনে পেয়েছি। অসংখ্য ধন্যবাদ!"</p>
+        </div>
+        <div class="testimonial-card">
+          <div class="testi-header">
+            <div class="testi-avatar">DK</div>
+            <div class="testi-user">
+              <h4>ডাঃ কবির হাসান</h4>
+              <p>চট্টগ্রাম ⭐⭐⭐⭐⭐</p>
+            </div>
+          </div>
+          <p class="testi-comment">"একজন চিকিৎসক হিসেবে আমি রোগীদের প্রাকৃতিক ও ভেজালমুক্ত পথ্য গ্রহণে উৎসাহিত করি। CureCare এর কালোজিরা তেল এবং চিয়া সিড সত্যিই সর্বোচ্চ মানের।"</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Main Footer ================= -->
+  <footer class="main-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-col">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
+            <div class="logo-icon" style="width: 36px; height: 36px; font-size: 20px;">🌿</div>
+            <h3 style="color: #fff; font-size: 22px; font-family: 'Outfit', sans-serif;">CureCare</h3>
+          </div>
+          <p>CureCare বাংলাদেশের অন্যতম নির্ভরযোগ্য প্রাকৃতিক স্বাস্থ্য ও অর্গানিক ফুড ব্র্যান্ড। আমাদের লক্ষ্য প্রতিটি পরিবারের কাছে শতভাগ খাঁটি ও পুষ্টিকর খাদ্য পৌঁছে দেওয়া।</p>
+          <p style="color: #10b981; font-weight: 700;">ট্রেড লাইসেন্স নং: TRAD/DSCC/019823/2026</p>
+        </div>
+
+        <div class="footer-col">
+          <h4>প্রয়োজনীয় লিংক</h4>
+          <ul class="footer-links">
+            <li><a href="/">হোম পেজ</a></li>
+            <li><a href="/track.html">অর্ডার ট্র্যাকিং</a></li>
+            <li><a href="#products-section">জনপ্রিয় পণ্যসমূহ</a></li>
+            <li><a href="/admin" target="_blank">এডমিন পোর্টাল</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>কাস্টমার কেয়ার</h4>
+          <ul class="footer-links">
+            <li><a href="javascript:void(0)">ডেলিভারি পলিসি</a></li>
+            <li><a href="javascript:void(0)">রিটার্ন ও রিফান্ড নীতি</a></li>
+            <li><a href="javascript:void(0)">প্রাইভেসি পলিসি</a></li>
+            <li><a href="javascript:void(0)">শর্তাবলী ও নিয়মাবলী</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>যোগাযোগ ও ঠিকানা</h4>
+          <ul class="footer-links footer-contact">
+            <li><span>📍</span> <span class="store-address">House 28, Road 7, Dhanmondi, Dhaka - 1205</span></li>
+            <li><span>📞</span> <span class="store-phone">+880 1799-880022</span></li>
+            <li><span>✉️</span> <span class="store-email">support@curecare.com.bd</span></li>
+            <li><span>⏰</span> প্রতিদিন সকাল ৯:০০ - রাত ১০:০০</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 CureCare. সর্বস্বত্ব সংরক্ষিত। Designed for Pure Organic Health.</div>
+        <div class="payment-methods">
+          <span class="payment-badge">ক্যাশ অন ডেলিভারি</span>
+          <span class="payment-badge" style="background: #e11d48;">bKash</span>
+          <span class="payment-badge" style="background: #ea580c;">Nagad</span>
+          <span class="payment-badge" style="background: #2563eb;">Visa / Master</span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= Mobile Sticky Bottom Navigation ================= -->
+  <div class="mobile-bottom-nav">
+    <div class="bottom-nav-inner">
+      <a href="/" class="bottom-nav-item active">
+        <span class="bottom-nav-icon">🏠</span>
+        <span>হোম</span>
+      </a>
+      <a href="#featuredCategoriesGrid" class="bottom-nav-item">
+        <span class="bottom-nav-icon">📁</span>
+        <span>ক্যাটাগরি</span>
+      </a>
+      <a href="/track.html" class="bottom-nav-item">
+        <span class="bottom-nav-icon">📍</span>
+        <span>ট্র্যাক</span>
+      </a>
+      <a href="javascript:void(0)" class="bottom-nav-item" onclick="openCartDrawer()">
+        <span class="bottom-nav-icon">
+          🛒
+          <span class="badge-count cart-count" style="top: -6px; right: -8px;">0</span>
+        </span>
+        <span>কার্ট</span>
+      </a>
+      <a href="/admin" target="_blank" class="bottom-nav-item">
+        <span class="bottom-nav-icon">⚙️</span>
+        <span>এডমিন</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ================= Sliding Cart Drawer (Offcanvas) ================= -->
+  <div class="cart-drawer-overlay" id="cartDrawerOverlay" onclick="closeCartDrawer()"></div>
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-drawer-header">
+      <h3><span>🛒</span> আপনার শপিং কার্ট</h3>
+      <button onclick="closeCartDrawer()" style="background: none; border: none; font-size: 20px; cursor: pointer;">✕</button>
+    </div>
+    <div class="cart-items-list" id="cartItemsList"></div>
+    <div class="cart-drawer-footer">
+      <div class="cart-subtotal-row">
+        <span>সাবটোটাল:</span>
+        <span id="cartSubtotal" style="color: var(--primary);">৳0</span>
+      </div>
+      <button class="btn-checkout-drawer" onclick="openInstantCheckout()">
+        অর্ডার সম্পন্ন করুন →
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= 1-Click Instant Order Modal (GhorerBazar Signature Feature) ================= -->
+  <div class="modal-overlay" id="instantCheckoutModal">
+    <div class="checkout-modal-content">
+      <button class="modal-close" onclick="closeCheckoutModal()">✕</button>
+      <div class="checkout-header">
+        <h3><span>⚡</span> দ্রুত অর্ডার করুন (১-ক্লিক চেকআউট)</h3>
+        <p>সরাসরি অর্ডার করতে নিচের তথ্যগুলো পূরণ করে "অর্ডার কনফার্ম করুন" বাটনে চাপুন</p>
+      </div>
+
+      <!-- Selected Items Summary -->
+      <div class="checkout-item-summary">
+        <table class="checkout-table">
+          <thead>
+            <tr>
+              <th>পণ্য</th>
+              <th>মূল্য</th>
+              <th>পরিমাণ</th>
+              <th style="text-align: right;">মোট</th>
+            </tr>
+          </thead>
+          <tbody id="checkoutItemsTbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Checkout Form -->
+      <form id="instantOrderForm">
+        <div class="form-group">
+          <label class="form-label">আপনার পূর্ণ নাম *</label>
+          <input type="text" id="custName" class="form-control" placeholder="যেমন: মোঃ সাকিব হাসান" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">মোবাইল নাম্বার * (১১ ডিজিট)</label>
+          <input type="tel" id="custPhone" class="form-control" placeholder="যেমন: 017XXXXXXXX" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">পূর্ণাঙ্গ ডেলিভারি ঠিকানা *</label>
+          <textarea id="custAddress" class="form-control" rows="2" placeholder="বাড়ি/ফ্ল্যাট নং, রোড নং, এলাকা, থানা ও জেলা উল্লেখ করুন" required></textarea>
+        </div>
+
+        <!-- Delivery Zone Selector -->
+        <div class="form-group">
+          <label class="form-label">ডেলিভারি এরিয়া নির্বাচন করুন *</label>
+          <div class="delivery-zones">
+            <div class="delivery-radio-card active" id="zone-inside_dhaka" onclick="setDeliveryZone('inside_dhaka')">
+              <input type="radio" name="delivery_zone_rad" checked>
+              <div>
+                <strong>ঢাকা সিটির ভিতরে</strong>
+                <div style="font-size: 11px; color: var(--primary); font-weight: 700;">চার্জ: ৳70</div>
+              </div>
+            </div>
+            <div class="delivery-radio-card" id="zone-outside_dhaka" onclick="setDeliveryZone('outside_dhaka')">
+              <input type="radio" name="delivery_zone_rad">
+              <div>
+                <strong>ঢাকা সিটির বাইরে</strong>
+                <div style="font-size: 11px; color: var(--primary); font-weight: 700;">চার্জ: ৳130</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Coupon Code Box -->
+        <div class="form-group">
+          <label class="form-label">ডিসকাউন্ট কুপন কোড (যদি থাকে)</label>
+          <div class="coupon-input-group">
+            <input type="text" id="couponCodeInput" class="form-control" placeholder="কুপন কোড দিন (যেমন: HEALTHY10)">
+            <button type="button" class="coupon-btn" onclick="applyCoupon()">প্রয়োগ করুন</button>
+          </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-group">
+          <label class="form-label">পেমেন্ট মেথড</label>
+          <div style="display: flex; gap: 12px; margin-top: 4px;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="payment_method" value="cod" checked> ক্যাশ অন ডেলিভারি (COD)
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer;">
+              <input type="radio" name="payment_method" value="bkash"> বিকাশ / নগদ
+            </label>
+          </div>
+        </div>
+
+        <!-- Special Notes -->
+        <div class="form-group">
+          <input type="text" id="custNotes" class="form-control" placeholder="অর্ডার সম্পর্কিত বিশেষ কোনো নির্দেশনা (ঐচ্ছিক)">
+        </div>
+
+        <!-- Price Breakdown -->
+        <div class="bill-breakdown">
+          <div class="bill-row">
+            <span>পণ্যের মূল্য (Subtotal):</span>
+            <strong id="checkoutSubtotal">৳0</strong>
+          </div>
+          <div class="bill-row">
+            <span>ডেলিভারি চার্জ:</span>
+            <strong id="checkoutShipping">৳70</strong>
+          </div>
+          <div class="bill-row" style="color: var(--secondary);">
+            <span>কুপন ছাড় (Discount):</span>
+            <strong id="checkoutDiscount">৳0</strong>
+          </div>
+          <div class="bill-row total-row">
+            <span>সর্বমোট প্রদেয় বিল (Grand Total):</span>
+            <span id="checkoutGrandTotal">৳0</span>
+          </div>
+        </div>
+
+        <button type="submit" id="btnConfirmOrder" class="btn-confirm-order">
+          <span>✔</span> অর্ডার কনফার্ম করুন
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= Product Detail Modal ================= -->
+  <div class="modal-overlay" id="productDetailModal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeProductDetail()">✕</button>
+      <div id="productDetailBody"></div>
+    </div>
+  </div>
+
+  <!-- ================= Order Success Confirmation Modal ================= -->
+  <div class="modal-overlay" id="orderSuccessModal">
+    <div class="checkout-modal-content" style="max-width: 500px;">
+      <div class="order-success-box">
+        <div class="success-icon-anim">✓</div>
+        <h3 style="font-size: 22px; font-weight: 800; color: var(--primary);">অভিনন্দন! আপনার অর্ডার সফল হয়েছে</h3>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">আমাদের কাস্টমার কেয়ার টিম শীঘ্রই আপনার সাথে ফোনে যোগাযোগ করে অর্ডার কনফার্ম করবে।</p>
+        
+        <div class="order-num-tag" id="successOrderNumber">CC-10024</div>
+        <p style="font-size: 15px; font-weight: 700;">সর্বমোট বিল: <span id="successTotal" style="color: var(--primary);">৳0</span> (ক্যাশ অন ডেলিভারি)</p>
+
+        <div class="success-actions">
+          <a id="trackOrderLink" href="#" class="btn-add-cart" style="padding: 10px 18px; border-radius: 9999px;">
+            <span>📍</span> অর্ডার ট্র্যাক করুন
+          </a>
+          <a id="invoiceLink" href="#" target="_blank" class="btn-order-now" style="padding: 10px 18px; border-radius: 9999px;">
+            <span>📄</span> ইনভয়েস দেখুন / প্রিন্ট করুন
+          </a>
+        </div>
+        <button onclick="closeSuccessModal()" style="margin-top: 18px; background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 12px; text-decoration: underline;">
+          আরো কেনাকাটা করুন
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="/js/app.js"></script>
+</body>
+</html>

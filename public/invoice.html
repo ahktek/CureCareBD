@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ইনভয়েস / ক্যাশ মেমো | CureCare</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Hind+Siliguri:wght@400;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Hind Siliguri', 'Outfit', sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+      padding: 30px 16px;
+    }
+    .invoice-card {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .invoice-top {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 24px;
+      margin-bottom: 24px;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-logo h1 {
+      font-size: 28px;
+      font-weight: 800;
+      color: #0c5e46;
+      font-family: 'Outfit';
+    }
+    .brand-logo h1 span { color: #10b981; }
+    .invoice-meta {
+      text-align: right;
+    }
+    .invoice-meta h2 {
+      font-size: 22px;
+      color: #0c5e46;
+      font-family: 'Outfit';
+    }
+    .client-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+    .client-box {
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
+      font-size: 13px;
+    }
+    .client-box h4 {
+      font-size: 14px;
+      color: #0c5e46;
+      margin-bottom: 8px;
+    }
+    .invoice-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+      font-size: 14px;
+    }
+    .invoice-table th {
+      background: #0c5e46;
+      color: #fff;
+      text-align: left;
+      padding: 10px 14px;
+    }
+    .invoice-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .totals-area {
+      display: flex;
+      justify-content: flex-end;
+    }
+    .totals-table {
+      width: 300px;
+      font-size: 14px;
+    }
+    .totals-table tr td {
+      padding: 6px 0;
+    }
+    .totals-table tr td:last-child {
+      text-align: right;
+      font-weight: 700;
+    }
+    .grand-total-row {
+      font-size: 18px;
+      color: #0c5e46;
+      border-top: 2px solid #0c5e46;
+    }
+    .invoice-footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 24px;
+      margin-top: 30px;
+      text-align: center;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .print-btn-bar {
+      max-width: 800px;
+      margin: 0 auto 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-print {
+      background: #0c5e46;
+      color: #fff;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    @media print {
+      body { background: #fff; padding: 0; }
+      .invoice-card { box-shadow: none; border-radius: 0; padding: 20px; }
+      .print-btn-bar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="print-btn-bar">
+    <a href="/" style="color: #0c5e46; font-weight: 700; text-decoration: none;">← হোম পেজে ফিরুন</a>
+    <button class="btn-print" onclick="window.print()">🖨️ ইনভয়েস প্রিন্ট / PDF সংরক্ষণ করুন</button>
+  </div>
+
+  <div class="invoice-card" id="invoiceArea">
+    <div class="invoice-top">
+      <div>
+        <div class="brand-logo">
+          <span style="font-size: 32px;">🌿</span>
+          <h1>Cure<span>Care</span></h1>
+        </div>
+        <p style="font-size: 12px; color: #64748b; margin-top: 4px;">বিশুদ্ধ প্রাকৃতিক খাবার ও স্বাস্থ্য সুরক্ষায় নিবেদিত</p>
+        <p style="font-size: 12px; color: #64748b;">House 28, Road 7, Dhanmondi, Dhaka - 1205</p>
+        <p style="font-size: 12px; color: #64748b;">Hotline: +880 1799-880022</p>
+      </div>
+      <div class="invoice-meta">
+        <h2>INVOICE</h2>
+        <div style="font-size: 16px; font-weight: 800; color: #0c5e46; margin: 4px 0;" id="invNumber">CC-10021</div>
+        <div style="font-size: 12px; color: #64748b;">তারিখ: <span id="invDate"></span></div>
+        <div style="margin-top: 8px; font-size: 12px;">
+          স্ট্যাটাস: <strong id="invStatus" style="color: #10b981; text-transform: uppercase;">CONFIRMED</strong>
+        </div>
+      </div>
+    </div>
+
+    <div class="client-details">
+      <div class="client-box">
+        <h4>গ্রাহকের তথ্য (Bill To):</h4>
+        <p><strong>নাম:</strong> <span id="invCustName"></span></p>
+        <p><strong>মোবাইল:</strong> <span id="invCustPhone"></span></p>
+        <p><strong>ঠিকানা:</strong> <span id="invCustAddr"></span></p>
+      </div>
+      <div class="client-box">
+        <h4>ডেলিভারি ও পেমেন্ট বিবরণ:</h4>
+        <p><strong>ডেলিভারি এরিয়া:</strong> <span id="invZone"></span></p>
+        <p><strong>পেমেন্ট পদ্ধতি:</strong> <span id="invPayment">ক্যাশ অন ডেলিভারি (COD)</span></p>
+        <p><strong>কুরিয়ার ট্র্যাকিং:</strong> <span id="invCourier">N/A</span></p>
+      </div>
+    </div>
+
+    <table class="invoice-table">
+      <thead>
+        <tr>
+          <th>ক্রমিক</th>
+          <th>পণ্যের বিবরণ</th>
+          <th>সাইজ/ওজন</th>
+          <th>একক মূল্য</th>
+          <th style="text-align: center;">পরিমাণ</th>
+          <th style="text-align: right;">মোট টাকা</th>
+        </tr>
+      </thead>
+      <tbody id="invItemsTbody"></tbody>
+    </table>
+
+    <div class="totals-area">
+      <table class="totals-table">
+        <tr>
+          <td>সাবটোটাল:</td>
+          <td id="invSubtotal">৳0</td>
+        </tr>
+        <tr>
+          <td>ডেলিভারি চার্জ:</td>
+          <td id="invDelivery">৳70</td>
+        </tr>
+        <tr>
+          <td>কুপন ছাড়:</td>
+          <td id="invDiscount">৳0</td>
+        </tr>
+        <tr class="grand-total-row">
+          <td>সর্বমোট প্রদেয় বিল:</td>
+          <td id="invGrandTotal">৳0</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="invoice-footer">
+      <p>CureCare এ কেনাকাটা করার জন্য আপনাকে আন্তরিক ধন্যবাদ!</p>
+      <p>পণ্য গ্রহণের সময় ডেলিভারিম্যানের সামনে চেক করে গ্রহণ করুন। যেকোনো প্রয়োজনে কল করুন: +880 1799-880022</p>
+    </div>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const orderNum = params.get('order') || 'CC-10021';
+
+    async function loadInvoice() {
+      try {
+        const res = await fetch(`/api/orders/track/${encodeURIComponent(orderNum)}`);
+        if (!res.ok) {
+          alert('ইনভয়েস পাওয়া যায়নি!');
+          return;
+        }
+        const data = await res.json();
+
+        document.getElementById('invNumber').textContent = data.order_number;
+        document.getElementById('invDate').textContent = new Date(data.created_at).toLocaleDateString('bn-BD');
+        document.getElementById('invStatus').textContent = data.order_status.toUpperCase();
+        document.getElementById('invCustName').textContent = data.customer_name;
+        document.getElementById('invCustPhone').textContent = data.customer_phone;
+        document.getElementById('invCustAddr').textContent = data.customer_address;
+        document.getElementById('invZone').textContent = data.delivery_zone === 'outside_dhaka' ? 'ঢাকা সিটির বাইরে' : 'ঢাকা সিটির ভিতরে';
+        document.getElementById('invPayment').textContent = data.payment_method === 'cod' ? 'ক্যাশ অন ডেলিভারি (COD)' : 'বিকাশ / নগদ';
+        document.getElementById('invCourier').textContent = data.courier_tracking || 'প্রক্রিয়াধীন';
+
+        const tbody = document.getElementById('invItemsTbody');
+        tbody.innerHTML = data.items.map((item, idx) => `
+          <tr>
+            <td>${idx + 1}</td>
+            <td><strong>${item.name}</strong></td>
+            <td>${item.weight}</td>
+            <td>৳${item.price}</td>
+            <td style="text-align: center;">${item.quantity}</td>
+            <td style="text-align: right;">৳${item.price * item.quantity}</td>
+          </tr>
+        `).join('');
+
+        document.getElementById('invSubtotal').textContent = `৳${data.subtotal}`;
+        document.getElementById('invDelivery').textContent = `৳${data.delivery_fee}`;
+        document.getElementById('invDiscount').textContent = `৳${data.discount || 0}`;
+        document.getElementById('invGrandTotal').textContent = `৳${data.total}`;
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadInvoice();
+  </script>
+</body>
+</html>
