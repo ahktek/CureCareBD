@@ -6,14 +6,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary: #0c5e46;
-  --primary-hover: #084735;
-  --primary-light: #e6f4f0;
-  --primary-dark: #042f22;
-  --secondary: #d4145a;
-  --secondary-hover: #b50f4c;
-  --accent: #f59e0b;
-  --accent-hover: #d97706;
+  --primary: #005a64;
+  --primary-hover: #01454d;
+  --primary-light: #eaf4f5;
+  --primary-dark: #01353a;
+  --secondary: #ff6857;
+  --secondary-hover: #ea5544;
+  --secondary-light: #fff0ed;
+  --secondary-dark: #d44434;
+  --accent: #ff6857;
+  --accent-hover: #ea5544;
   --text-dark: #1e293b;
   --text-muted: #64748b;
   --text-light: #94a3b8;
@@ -21,7 +23,7 @@
   --bg-white: #ffffff;
   --border-color: #e2e8f0;
   --border-light: #f1f5f9;
-  --success: #10b981;
+  --success: #0d9488;
   --danger: #ef4444;
   --warning: #f59e0b;
   --radius-sm: 6px;
@@ -67,7 +69,7 @@ button, input, select, textarea {
 
 /* ================= Top Announcement Bar ================= */
 .top-bar {
-  background: linear-gradient(90deg, #0c5e46 0%, #084735 100%);
+  background: linear-gradient(90deg, #005a64 0%, #01353a 100%);
   color: #fff;
   font-size: 13px;
   padding: 7px 0;
@@ -84,8 +86,8 @@ button, input, select, textarea {
   gap: 8px;
 }
 .top-badge {
-  background: var(--accent);
-  color: #000;
+  background: var(--secondary);
+  color: #fff;
   padding: 2px 8px;
   border-radius: var(--radius-full);
   font-size: 11px;
@@ -105,7 +107,7 @@ button, input, select, textarea {
 }
 .top-links a:hover {
   opacity: 1;
-  color: #fde047;
+  color: #ffb8af;
 }
 
 /* ================= Main Header ================= */
@@ -121,25 +123,38 @@ button, input, select, textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 0;
+  padding: 12px 0;
   gap: 20px;
 }
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.site-logo {
+  height: 48px;
+  max-width: 230px;
+  width: auto;
+  object-fit: contain;
+  display: block;
+  transition: var(--transition);
+}
+.site-logo:hover {
+  transform: scale(1.02);
 }
 .logo-icon {
   width: 44px;
   height: 44px;
-  background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%);
+  background: linear-gradient(135deg, var(--primary) 0%, #0ea5b5 100%);
   border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-size: 24px;
-  box-shadow: 0 4px 10px rgba(12, 94, 70, 0.25);
+  box-shadow: 0 4px 10px rgba(0, 90, 100, 0.25);
 }
 .logo-text h1 {
   font-family: 'Outfit', sans-serif;
@@ -150,7 +165,7 @@ button, input, select, textarea {
   letter-spacing: -0.5px;
 }
 .logo-text h1 span {
-  color: #10b981;
+  color: var(--secondary);
 }
 .logo-text p {
   font-size: 11px;
@@ -183,7 +198,7 @@ button, input, select, textarea {
 }
 .search-input:focus {
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(12, 94, 70, 0.15);
+  box-shadow: 0 0 0 3px rgba(0, 90, 100, 0.15);
 }
 .search-btn {
   position: absolute;
@@ -426,7 +441,7 @@ button, input, select, textarea {
   font-weight: 700;
   font-size: 15px;
   transition: var(--transition);
-  box-shadow: 0 4px 14px rgba(212, 20, 90, 0.4);
+  box-shadow: 0 4px 14px rgba(255, 104, 87, 0.4);
 }
 .slide-btn:hover {
   background: var(--secondary-hover);
@@ -777,12 +792,12 @@ button, input, select, textarea {
 }
 .btn-order-now:hover {
   background: var(--secondary-hover);
-  box-shadow: 0 4px 10px rgba(212, 20, 90, 0.3);
+  box-shadow: 0 4px 10px rgba(255, 104, 87, 0.35);
 }
 .btn-add-cart {
   background: var(--primary-light);
   color: var(--primary);
-  border: 1px solid #a7f3d0;
+  border: 1px solid #bce1e5;
   padding: 9px 8px;
   border-radius: var(--radius-sm);
   font-size: 13px;
@@ -982,7 +997,7 @@ button, input, select, textarea {
 }
 .form-control:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 2px rgba(12, 94, 70, 0.1);
+  box-shadow: 0 0 0 2px rgba(0, 90, 100, 0.15);
 }
 .delivery-zones {
   display: grid;
@@ -1040,7 +1055,7 @@ button, input, select, textarea {
 }
 .btn-confirm-order {
   width: 100%;
-  background: linear-gradient(135deg, #10b981 0%, #0c5e46 100%);
+  background: linear-gradient(135deg, var(--secondary) 0%, #ea5544 100%);
   color: #fff;
   border: none;
   padding: 14px;
@@ -1053,10 +1068,10 @@ button, input, select, textarea {
   justify-content: center;
   gap: 8px;
   transition: var(--transition);
-  box-shadow: 0 4px 14px rgba(12, 94, 70, 0.35);
+  box-shadow: 0 4px 14px rgba(255, 104, 87, 0.35);
 }
 .btn-confirm-order:hover {
-  background: linear-gradient(135deg, #059669 0%, #064e3b 100%);
+  background: linear-gradient(135deg, #ea5544 0%, #d44434 100%);
   transform: translateY(-2px);
 }
 
@@ -1258,7 +1273,7 @@ button, input, select, textarea {
 
 /* ================= Footer ================= */
 .main-footer {
-  background: #111827;
+  background: #061d21;
   color: #94a3b8;
   padding: 48px 0 20px;
   font-size: 13px;
@@ -1269,7 +1284,7 @@ button, input, select, textarea {
   grid-template-columns: 2fr 1fr 1fr 1.5fr;
   gap: 30px;
   padding-bottom: 36px;
-  border-bottom: 1px solid #1f2937;
+  border-bottom: 1px solid #0f353c;
 }
 .footer-col h4 {
   color: #fff;
@@ -1292,7 +1307,7 @@ button, input, select, textarea {
   transition: var(--transition);
 }
 .footer-links a:hover {
-  color: #10b981;
+  color: var(--secondary);
 }
 .footer-contact li {
   display: flex;
@@ -1312,7 +1327,7 @@ button, input, select, textarea {
   gap: 8px;
 }
 .payment-badge {
-  background: #1f2937;
+  background: #0f353c;
   color: #fff;
   padding: 4px 8px;
   border-radius: var(--radius-sm);
@@ -1447,9 +1462,17 @@ button, input, select, textarea {
     gap: 12px;
     text-align: center;
   }
+  .site-logo {
+    height: 40px;
+    max-width: 175px;
+  }
 }
 
 @media (max-width: 480px) {
+  .site-logo {
+    height: 34px;
+    max-width: 145px;
+  }
   .categories-grid {
     grid-template-columns: repeat(2, 1fr);
   }

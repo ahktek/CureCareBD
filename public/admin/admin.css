@@ -5,17 +5,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
 
 :root {
-  --admin-primary: #0c5e46;
-  --admin-primary-dark: #064030;
-  --admin-accent: #10b981;
+  --admin-primary: #005a64;
+  --admin-primary-dark: #01353a;
+  --admin-accent: #ff6857;
   --admin-bg: #f8fafc;
   --admin-card: #ffffff;
   --admin-text: #1e293b;
   --admin-muted: #64748b;
   --admin-border: #e2e8f0;
-  --admin-sidebar: #0f172a;
+  --admin-sidebar: #061d21;
   --admin-sidebar-text: #94a3b8;
-  --admin-sidebar-active: #1e293b;
+  --admin-sidebar-active: #0c2d33;
   --radius: 10px;
 }
 
@@ -34,7 +34,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #064030 0%, #0f172a 100%);
+  background: linear-gradient(135deg, #01353a 0%, #061d21 100%);
   padding: 16px;
 }
 .auth-card {
