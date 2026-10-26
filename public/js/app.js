@@ -674,11 +674,24 @@ async function openProductDetail(productId) {
     const hasDiscount = product.discount_price && product.discount_price < product.base_price;
     const variations = product.variations || [];
     const activeVar = variations[0] || null;
+    const gallery = Array.isArray(product.gallery) && product.gallery.length > 0 
+      ? product.gallery 
+      : (product.image ? [product.image] : []);
 
     content.innerHTML = `
       <div class="product-detail-layout">
         <div class="detail-img-box">
-          <img src="${product.image}" alt="${product.name}" class="detail-img">
+          <img src="${product.image || gallery[0]}" alt="${product.name}" class="detail-img" id="mainProductDetailImg">
+          ${gallery.length > 1 ? `
+            <div class="detail-gallery-thumbs" style="display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding: 4px 2px;">
+              ${gallery.map((imgUrl, i) => `
+                <img src="${imgUrl}" class="detail-gallery-thumb ${i === 0 ? 'active' : ''}"
+                     style="width: 54px; height: 54px; border-radius: 6px; object-fit: cover; cursor: pointer; border: 2px solid ${i === 0 ? 'var(--primary)' : '#e2e8f0'}; transition: all 0.2s;"
+                     onclick="switchStorefrontDetailImage('${imgUrl.replace(/'/g, "\\'")}', this)"
+                     alt="Thumbnail">
+              `).join('')}
+            </div>
+          ` : ''}
         </div>
         <div class="detail-info">
           <div class="product-category">${product.category_name_bn || product.category_name}</div>
@@ -729,6 +742,20 @@ async function openProductDetail(productId) {
     modal.classList.add('active');
   } catch (err) {
     console.error('Failed to load product detail:', err);
+  }
+}
+
+function switchStorefrontDetailImage(src, el) {
+  const mainImg = document.getElementById('mainProductDetailImg');
+  if (mainImg) mainImg.src = src;
+  const thumbs = document.querySelectorAll('.detail-gallery-thumb');
+  thumbs.forEach(t => {
+    t.classList.remove('active');
+    t.style.borderColor = '#e2e8f0';
+  });
+  if (el) {
+    el.classList.add('active');
+    el.style.borderColor = 'var(--primary)';
   }
 }
 

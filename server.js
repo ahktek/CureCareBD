@@ -50,6 +50,41 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
+// Helper: Normalize product with parsed variations & multi-image gallery
+function formatProductRecord(p) {
+  if (!p) return null;
+  let variations = [];
+  try {
+    variations = p.variations_json ? JSON.parse(p.variations_json) : [];
+  } catch (e) {
+    variations = [];
+  }
+
+  let addImages = [];
+  if (p.additional_images) {
+    try {
+      addImages = typeof p.additional_images === 'string' ? JSON.parse(p.additional_images) : p.additional_images;
+      if (!Array.isArray(addImages)) addImages = [];
+    } catch (e) {
+      addImages = [];
+    }
+  }
+
+  // Construct unified gallery array with primary image first, avoiding duplicates
+  const gallery = [];
+  if (p.image) gallery.push(p.image);
+  addImages.forEach(img => {
+    if (img && !gallery.includes(img)) gallery.push(img);
+  });
+
+  return {
+    ...p,
+    variations,
+    additional_images: addImages,
+    gallery: gallery.length > 0 ? gallery : (p.image ? [p.image] : [])
+  };
+}
+
 // Middleware: Authenticate Admin JWT
 function authenticateAdmin(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -144,10 +179,7 @@ app.get('/api/products', (req, res) => {
     params.push(parseInt(limit));
 
     const rows = db.prepare(query).all(...params);
-    const products = rows.map(p => ({
-      ...p,
-      variations: p.variations_json ? JSON.parse(p.variations_json) : []
-    }));
+    const products = rows.map(formatProductRecord);
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -161,16 +193,13 @@ app.get('/api/products/search', (req, res) => {
     if (!q || q.length < 1) return res.json([]);
 
     const rows = db.prepare(`
-      SELECT p.id, p.name, p.name_bn, p.slug, p.base_price, p.discount_price, p.image, p.variations_json
+      SELECT p.id, p.name, p.name_bn, p.slug, p.base_price, p.discount_price, p.image, p.additional_images, p.variations_json
       FROM products p
       WHERE p.is_active = 1 AND (p.name LIKE ? OR p.name_bn LIKE ? OR p.sku LIKE ?)
       LIMIT 8
     `).all(`%${q}%`, `%${q}%`, `%${q}%`);
 
-    const results = rows.map(p => ({
-      ...p,
-      variations: p.variations_json ? JSON.parse(p.variations_json) : []
-    }));
+    const results = rows.map(formatProductRecord);
     res.json(results);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -182,16 +211,16 @@ app.get('/api/products/:identifier', (req, res) => {
   try {
     const { identifier } = req.params;
     const isId = /^\d+$/.test(identifier);
-    const product = db.prepare(`
+    const rawProduct = db.prepare(`
       SELECT p.*, c.name as category_name, c.name_bn as category_name_bn, c.slug as category_slug
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       WHERE ${isId ? 'p.id = ?' : 'p.slug = ?'}
     `).get(identifier);
 
-    if (!product) return res.status(404).json({ error: 'Product not found' });
+    if (!rawProduct) return res.status(404).json({ error: 'Product not found' });
 
-    product.variations = product.variations_json ? JSON.parse(product.variations_json) : [];
+    const product = formatProductRecord(rawProduct);
 
     const reviews = db.prepare(`
       SELECT * FROM reviews WHERE product_id = ? AND is_approved = 1 ORDER BY id DESC
@@ -467,13 +496,22 @@ app.get('/api/admin/stats', authenticateAdmin, (req, res) => {
   }
 });
 
-// Admin Image Upload
+// Admin Image Upload (Single)
 app.post('/api/admin/upload', authenticateAdmin, upload.single('image'), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: 'No image file uploaded' });
   }
   const imageUrl = `/images/uploads/${req.file.filename}`;
   res.json({ url: imageUrl });
+});
+
+// Admin Multiple Images Upload (Up to 10 images)
+app.post('/api/admin/upload-multiple', authenticateAdmin, upload.array('images', 10), (req, res) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).json({ error: 'No image files uploaded' });
+  }
+  const urls = req.files.map(f => `/images/uploads/${f.filename}`);
+  res.json({ urls });
 });
 
 // Admin Orders List & Filter
@@ -555,17 +593,14 @@ app.delete('/api/admin/orders/:id', authenticateAdmin, (req, res) => {
 // Admin Products CRUD
 app.get('/api/admin/products', authenticateAdmin, (req, res) => {
   try {
-    const products = db.prepare(`
+    const rows = db.prepare(`
       SELECT p.*, c.name as category_name, c.name_bn as category_name_bn
       FROM products p
       LEFT JOIN categories c ON p.category_id = c.id
       ORDER BY p.id DESC
     `).all();
 
-    products.forEach(p => {
-      p.variations = p.variations_json ? JSON.parse(p.variations_json) : [];
-    });
-
+    const products = rows.map(formatProductRecord);
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -577,7 +612,7 @@ app.post('/api/admin/products', authenticateAdmin, (req, res) => {
     const {
       name, name_bn, slug, description, short_desc, category_id,
       base_price, discount_price, stock = 100, sku, image,
-      variations = [], is_featured = 0, is_active = 1
+      additional_images, variations = [], is_featured = 0, is_active = 1
     } = req.body;
 
     if (!name || !base_price) {
@@ -586,17 +621,19 @@ app.post('/api/admin/products', authenticateAdmin, (req, res) => {
 
     const finalSlug = (slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '')) + '-' + Date.now();
 
+    const addImagesStr = additional_images ? (typeof additional_images === 'string' ? additional_images : JSON.stringify(additional_images)) : null;
+
     const stmt = db.prepare(`
       INSERT INTO products (
         name, name_bn, slug, description, short_desc, category_id,
-        base_price, discount_price, stock, sku, image, variations_json,
+        base_price, discount_price, stock, sku, image, additional_images, variations_json,
         is_featured, is_active
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       name, name_bn || null, finalSlug, description || '', short_desc || '',
       category_id ? parseInt(category_id) : null,
       parseFloat(base_price), discount_price ? parseFloat(discount_price) : null,
-      parseInt(stock), sku || null, image || null,
+      parseInt(stock), sku || null, image || null, addImagesStr,
       JSON.stringify(variations),
       is_featured ? 1 : 0, is_active ? 1 : 0
     );
@@ -613,22 +650,25 @@ app.put('/api/admin/products/:id', authenticateAdmin, (req, res) => {
     const {
       name, name_bn, description, short_desc, category_id,
       base_price, discount_price, stock, sku, image,
-      variations = [], is_featured, is_active
+      additional_images, variations = [], is_featured, is_active
     } = req.body;
+
+    const addImagesStr = additional_images !== undefined ? (typeof additional_images === 'string' ? additional_images : JSON.stringify(additional_images)) : null;
 
     db.prepare(`
       UPDATE products SET
         name = ?, name_bn = ?, description = ?, short_desc = ?, category_id = ?,
         base_price = ?, discount_price = ?, stock = ?, sku = ?, image = ?,
-        variations_json = ?, is_featured = ?, is_active = ?
+        additional_images = ?, variations_json = ?, is_featured = ?, is_active = ?
       WHERE id = ?
     `).run(
       name, name_bn || null, description, short_desc,
       category_id ? parseInt(category_id) : null,
       parseFloat(base_price), discount_price ? parseFloat(discount_price) : null,
       parseInt(stock), sku || null, image || null,
+      addImagesStr,
       JSON.stringify(variations),
-      is_featured ? 1 : 0, is_active ? 1 : 0,
+      is_featured ? 1 : 0, is_active !== undefined ? (is_active ? 1 : 0) : 1,
       id
     );
 

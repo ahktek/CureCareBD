@@ -490,8 +490,12 @@
         </div>
 
         <div style="margin-bottom: 12px;">
-          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ছবির লিংক (URL) *</label>
-          <input type="url" id="prodImage" class="btn-sm" style="width: 100%; padding: 8px;" placeholder="https://images.unsplash.com/..." required>
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ছবির লিংক (URL) অথবা ফাইল আপলোড *</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="url" id="prodImage" class="btn-sm" style="flex: 1; padding: 8px;" placeholder="https://images.unsplash.com/..." required>
+            <button type="button" onclick="document.getElementById('prodImageFile').click()" class="btn-sm" style="background: #e2e8f0; white-space: nowrap;">📁 ফাইল আপলোড</button>
+            <input type="file" id="prodImageFile" accept="image/*" style="display: none;" onchange="handleNewProductImageUpload(event)">
+          </div>
         </div>
 
         <div style="margin-bottom: 12px;">
@@ -507,6 +511,166 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px;">
           <button type="button" onclick="closeAddProductModal()" class="btn-sm">বাতিল</button>
           <button type="submit" class="btn-primary">পণ্য সেভ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Edit Product Details & Gallery -->
+  <div id="editProductModal" class="admin-modal-overlay">
+    <div class="admin-modal-box" style="max-width: 840px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px;">
+        <div>
+          <h3 style="font-size: 17px; font-weight: 700; color: var(--admin-primary); margin: 0;">
+            ✏️ পণ্যের বিস্তারিত তথ্য ও গ্যালারি এডিট (Edit Product Details & Gallery)
+          </h3>
+          <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">
+            পণ্যের বর্ণনা, মূল্য, স্টক এবং ৫+ ছবি সমৃদ্ধ গ্যালারি পরিচালনা করুন।
+          </p>
+        </div>
+        <button type="button" onclick="closeEditProductModal()" style="border: none; background: #f1f5f9; width: 32px; height: 32px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+      </div>
+
+      <form id="editProductForm" onsubmit="saveProductDetails(event)">
+        <input type="hidden" id="editProdId">
+
+        <!-- Basic Info Section -->
+        <div style="background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #edf2f7;">
+          <h4 style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+            📌 মৌলিক তথ্য (Basic Info)
+          </h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ইংরেজি নাম (English Name) *</label>
+              <input type="text" id="editProdNameEn" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;" required>
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">বাংলা নাম (Bengali Name) *</label>
+              <input type="text" id="editProdNameBn" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ক্যাটাগরি</label>
+              <select id="editProdCategory" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;"></select>
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">SKU কোড</label>
+              <input type="text" id="editProdSku" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;">
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing, Stock & Status Section -->
+        <div style="background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #edf2f7;">
+          <h4 style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+            💰 মূল্য, স্টক ও স্ট্যাটাস (Pricing & Availability)
+          </h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">রেগুলার মূল্য (৳) *</label>
+              <input type="number" id="editProdPrice" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;" required>
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">অফার মূল্য (৳)</label>
+              <input type="number" id="editProdDiscountPrice" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;">
+            </div>
+            <div>
+              <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">স্টক পরিমাণ</label>
+              <input type="number" id="editProdStock" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;">
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 20px; align-items: center; padding: 10px 12px; background: #fff; border-radius: 6px; border: 1px solid #e2e8f0; flex-wrap: wrap;">
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+              <input type="checkbox" id="editProdIsActive" checked>
+              <span>🌐 ওয়েবসাইটে লাইভ প্রদর্শন করুন (Active)</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; cursor: pointer;">
+              <input type="checkbox" id="editProdIsFeatured">
+              <span>⭐ হোমপেজে ফিচার্ড করুন (Featured)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Variations Section -->
+        <div style="background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #edf2f7;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <h4 style="font-size: 13px; font-weight: 700; color: #334155; margin: 0; text-transform: uppercase; letter-spacing: 0.5px;">
+              ⚖️ সাইজ ও ভেরিয়েশন (Product Variations)
+            </h4>
+            <button type="button" onclick="addEditVariationRow()" class="btn-sm" style="background: #0284c7; color: white;">+ ভেরিয়েশন যোগ করুন</button>
+          </div>
+          <div id="editVariationsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+        </div>
+
+        <!-- PRODUCT GALLERY SECTION -->
+        <div style="background: #fff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 2px solid #0d9488; box-shadow: 0 2px 8px rgba(13,148,136,0.06);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <div>
+              <h4 style="font-size: 14px; font-weight: 700; color: #0f766e; margin: 0; display: flex; align-items: center; gap: 6px;">
+                <span>📸</span> পণ্য গ্যালারি ও ছবিসমূহ (Product Gallery & Multi-Images)
+              </h4>
+              <p style="font-size: 12px; color: #64748b; margin: 3px 0 0 0;">
+                একটি পণ্যের জন্য কমপক্ষে ৫টি ছবি আপলোড ও সাজানো যাবে। '⭐ প্রধান বানান' বাটনে ক্লিক করে মূল ছবি নির্ধারণ করুন।
+              </p>
+            </div>
+            <div style="background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+              মোট ছবি: <span id="editGalleryCount">0</span> টি
+            </div>
+          </div>
+
+          <!-- Gallery Thumbnails Grid -->
+          <div id="editGalleryGrid" class="gallery-grid-container" style="min-height: 110px; margin-bottom: 14px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Multi-Image Upload Zone -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
+            <div class="gallery-upload-dropzone" onclick="document.getElementById('editGalleryFileInput').click()" style="border: 2px dashed #0d9488; border-radius: 8px; padding: 16px; text-align: center; background: #f0fdfa; cursor: pointer; transition: all 0.2s;">
+              <input type="file" id="editGalleryFileInput" multiple accept="image/*" style="display: none;" onchange="handleGalleryUploadFiles(event)">
+              <div style="font-size: 24px; margin-bottom: 4px;">📤</div>
+              <div style="font-size: 13px; font-weight: 700; color: #0f766e;">একাধিক ছবি আপলোড করুন</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">এক সাথে ১ থেকে ৫+ টি ছবি নির্বাচন করুন (JPG, PNG, WEBP)</div>
+              <div id="uploadProgressText" style="font-size: 11px; font-weight: 600; color: #0284c7; margin-top: 6px; display: none;">⏳ ছবি আপলোড হচ্ছে...</div>
+            </div>
+
+            <!-- Add URL directly -->
+            <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc; display: flex; flex-direction: column; justify-content: center;">
+              <label style="font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 6px; display: block;">
+                🔗 ছবির সরাসরি লিংক (Image URL) যোগ করুন
+              </label>
+              <div style="display: flex; gap: 6px;">
+                <input type="url" id="editGalleryUrlInput" class="btn-sm" style="flex: 1; padding: 8px; background: #fff;" placeholder="https://images.unsplash.com/...">
+                <button type="button" onclick="addUrlToEditGallery()" class="btn-primary" style="white-space: nowrap; padding: 8px 12px; font-size: 12px;">+ যোগ করুন</button>
+              </div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 6px;">ওয়েব লিংক বা হোস্ট করা ইমেজের লিঙ্ক পেস্ট করে সরাসরি গ্যালারিতে যোগ করুন।</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Descriptions Section -->
+        <div style="background: #f8fafc; padding: 14px; border-radius: 8px; margin-bottom: 16px; border: 1px solid #edf2f7;">
+          <h4 style="font-size: 13px; font-weight: 700; color: #334155; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">
+            📝 পণ্যের বিবরণ ও স্বাস্থ্য উপকারিতা (Descriptions)
+          </h4>
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">সংক্ষিপ্ত বিবরণ (Short Description)</label>
+            <input type="text" id="editProdShortDesc" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;" placeholder="এক বা দুই লাইনের আকর্ষণীয় সারাংশ">
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">বিস্তারিত বর্ণনা ও স্বাস্থ্য উপকারিতা (Full Description & Health Benefits)</label>
+            <textarea id="editProdDesc" class="btn-sm" rows="4" style="width: 100%; padding: 8px; background: #fff;"></textarea>
+          </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+          <button type="button" onclick="closeEditProductModal()" class="btn-sm" style="padding: 8px 18px; font-size: 13px;">বাতিল</button>
+          <button type="submit" class="btn-primary" style="padding: 8px 24px; font-size: 13px; font-weight: 700;">
+            💾 পরিবর্তন সংরক্ষণ করুন (Save Changes)
+          </button>
         </div>
       </form>
     </div>
