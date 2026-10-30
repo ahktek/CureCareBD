@@ -4,16 +4,28 @@ const db = require('./db');
 function seed() {
   console.log('🌱 Seeding CureCare Database...');
 
-  // 1. Seed Admin
+  // 1. Seed Enterprise Admins
+  const passwordHash = bcrypt.hashSync('CureCare@2026!AdminPortal', 10);
   const adminExists = db.prepare('SELECT id FROM admins WHERE username = ?').get('admin');
   if (!adminExists) {
-    const passwordHash = bcrypt.hashSync('curecare123', 10);
     db.prepare(`
       INSERT INTO admins (username, password_hash, name, role)
       VALUES (?, ?, ?, ?)
     `).run('admin', passwordHash, 'Super Admin', 'superadmin');
-    console.log('✅ Admin user created (admin / curecare123)');
+  } else {
+    db.prepare('UPDATE admins SET password_hash = ? WHERE username = ?').run(passwordHash, 'admin');
   }
+
+  const enterpriseAdmin = db.prepare('SELECT id FROM admins WHERE username = ?').get('admin@curecarebd.com');
+  if (!enterpriseAdmin) {
+    db.prepare(`
+      INSERT INTO admins (username, password_hash, name, role)
+      VALUES (?, ?, ?, ?)
+    `).run('admin@curecarebd.com', passwordHash, 'Master Administrator', 'superadmin');
+  } else {
+    db.prepare('UPDATE admins SET password_hash = ? WHERE username = ?').run(passwordHash, 'admin@curecarebd.com');
+  }
+  console.log('✅ Enterprise Admin credentials seeded (admin@curecarebd.com / CureCare@2026!AdminPortal)');
 
   // 2. Seed Settings
   const defaultSettings = [

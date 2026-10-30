@@ -862,8 +862,8 @@ app.post('/api/admin/settings', authenticateAdmin, (req, res) => {
   }
 });
 
-// Fallback to index.html for SPA-style routing if needed
-app.get('/admin', (req, res) => {
+// Secure Obfuscated Admin Route & Fallback
+app.get(['/curecare-internal-8921', '/admin'], (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin', 'index.html'));
 });
 
@@ -879,5 +879,5 @@ app.get('/invoice', (req, res) => {
 app.listen(PORT, () => {
   console.log(`🚀 CureCare Server & Admin CMS running live at http://localhost:${PORT}`);
   console.log(`🛒 Storefront: http://localhost:${PORT}/`);
-  console.log(`⚙️ Admin CMS: http://localhost:${PORT}/admin (Login: admin / curecare123)`);
+  console.log(`🔒 Secure Admin CMS: http://localhost:${PORT}/curecare-internal-8921 (Login: admin@curecarebd.com / CureCare@2026!AdminPortal)`);
 });
