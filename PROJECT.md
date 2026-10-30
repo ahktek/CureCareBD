@@ -100,9 +100,44 @@ The webhook handles customer messages from multiple Facebook Pages using an auto
      - Live storefront dynamic gallery viewer in the Product Detail Modal with interactive clickable thumbnail switcher.
 - **Image Upload Management**: Form-based image upload pipeline saving to `public/images/uploads/` and referencing live paths.
 
+### 4.2 Media Management & Admin CMS Overhaul
+- **Multi-Image Gallery Engine (5-Image Limit)**:
+  - Database persistence via `additional_images` JSON column.
+  - Multi-file image upload endpoint: `POST /api/admin/upload-multiple` (up to 10 images with MIME validation).
+  - Dedicated Edit Details modal (`#editProductModal`) with a 280px tall Hero Canvas and 5 dedicated slot cards.
+  - Direct primary image assignment (`⭐ কভার`), hover angle assignment, and instant deletion.
+- **Interactive Image Cropper Modal**:
+  - Zero-dependency HTML5 Canvas cropping engine.
+  - Aspect ratio presets: **1:1 Square (Card Standard — Recommended)**, **4:5 Portrait**, **3:4 Standard**, **16:9 Banner**, and **Original / Free**.
+  - Mouse/touch drag to pan, mouse-wheel and slider zoom (60% to 300%), 90° clockwise rotation, and 3x3 rule-of-thirds alignment grid.
+  - High-definition canvas export (up to 2400px JPEG) ensuring crisp typography and labels without blurry scaling.
+- **Animated Floating Save Status Feedback & Dynamic Buttons**:
+  - Fixed top-right floating notification popup with glowing aura and backdrop blur (`SaveStatusPopup`).
+  - States: `saving` (pulsing radar, spinning loader), `success` (emerald checkmark, timestamp, 4-second animated countdown line), and `error` (warning alert, inline retry button).
+  - Dynamic reactive Save buttons across both top action bar and sticky bottom bar transforming state in real time.
+
 ---
 
-## 5. Maintenance & Diagnostic Cheatsheet
+## 5. CureCare as Template Authority for Color Fiesta
+
+**CureCare serves as the official upstream master template for Color Fiesta (`D:\Dev stuff\Rebel mama\Color fiesta`).**
+
+All features developed in CureCare — including the database schema migrations, multi-image upload APIs, 5-slot gallery manager, HTML5 Canvas cropper, animated save status popup, and storefront thumbnail gallery — are fully documented for seamless copy-paste replication:
+
+👉 **Master Copy-Paste Blueprint**: [`docs/COLOR_FIESTA_MIGRATION_BLUEPRINT.md`](./docs/COLOR_FIESTA_MIGRATION_BLUEPRINT.md)  
+👉 **Companion Blueprint in Color Fiesta**: `D:\Dev stuff\Rebel mama\Color fiesta\docs\CURECARE_TEMPLATE_OVERHAUL.md`
+
+### Replication Summary:
+1. **Database**: `database/migrate-gallery.js` adds `additional_images` column to `colorfiesta.db`.
+2. **Backend**: `server.js` adds `formatProductRecord` and `/api/admin/upload-multiple`.
+3. **Admin CMS Markup**: `public/admin/index.html` adds `#editProductModal`, `#imageCropperModal`, and `#saveStatusPopup`.
+4. **Admin CMS Logic**: `public/admin/admin.js` adds gallery state, cropper canvas logic, and dynamic reactive save button feedback.
+5. **Admin Styling**: `public/admin/admin.css` adds slot grid, badges, and popup keyframes.
+6. **Storefront Frontend**: `public/js/app.js` adds thumbnail gallery row and click-to-swap image viewer in the product detail modal.
+
+---
+
+## 6. Maintenance & Diagnostic Cheatsheet
 
 ### Check n8n Executions on VPS
 ```bash

@@ -8,8 +8,10 @@
 
 | Component | Technology | Location / Port | Description |
 |---|---|---|---|
-| **Server** | Node.js / Express | `server.js` (Port `3000`) | Main web server, API routes, multi-image upload (`/api/admin/upload-multiple`), SSR/static delivery. |
+| **Server** | Node.js / Express | `server.js` (Port `3000`) | Main web server, API routes, multi-image upload (`/api/admin/upload-multiple`), single upload (`/api/admin/upload`), SSR/static delivery. |
 | **Catalog Data** | SQLite DB | `database/curecare.db` | Master product catalog, stock counts, active states, multi-image galleries (`additional_images`). |
+| **Admin CMS** | Vanilla SPA | `public/admin/` | 5-image gallery manager, HTML5 Canvas cropper, floating animated save status feedback, product variations builder. |
+| **Storefront** | Vanilla HTML/JS | `public/` & `public/js/app.js` | 1-Click instant order modal, interactive thumbnail gallery switcher (`switchStorefrontDetailImage`). |
 | **Public Assets** | Static Files | `public/` & `public/images/uploads/` | Logos, banners, uploaded product media images. |
 | **Entry Point** | JavaScript | `index.js` | App bootstrap and environment initializers. |
 
@@ -47,7 +49,16 @@
 
 ---
 
-## 4. Instant Diagnostic Cheatsheet (Copy-Paste)
+## 4. Upstream Template Replication for Color Fiesta
+
+CureCare is the authoritative template for Color Fiesta. All backend APIs, database migrations, 5-image gallery managers, image croppers, and save status popups are documented for 1-to-1 copy-paste replication:
+
+- **Master Replication Blueprint**: [`docs/COLOR_FIESTA_MIGRATION_BLUEPRINT.md`](./COLOR_FIESTA_MIGRATION_BLUEPRINT.md)
+- **Target Repository**: `D:\Dev stuff\Rebel mama\Color fiesta`
+
+---
+
+## 5. Instant Diagnostic Cheatsheet (Copy-Paste)
 
 ### A. Check Last 3 Executions (Direct SQLite Query)
 ```python
