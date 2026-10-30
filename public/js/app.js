@@ -187,10 +187,12 @@ function renderProducts() {
     const discountPercent = hasDiscount ? Math.round(((p.base_price - p.discount_price) / p.base_price) * 100) : 0;
     const variations = p.variations || [];
     const activeVar = variations[0] || null;
+    const isOutOfStock = p.stock !== undefined && p.stock !== null && p.stock <= 0;
 
     return `
       <div class="product-card" id="product-${p.id}">
-        ${hasDiscount ? `<div class="badge-discount">${discountPercent}% ছাড়</div>` : ''}
+        ${isOutOfStock ? `<div style="position: absolute; top: 10px; left: 10px; background: #dc2626; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px; z-index: 5;">স্টক শেষ (Out of Stock)</div>` : ''}
+        ${!isOutOfStock && hasDiscount ? `<div class="badge-discount">${discountPercent}% ছাড়</div>` : ''}
         <div class="badge-cure">১০০% অর্গানিক</div>
         <div class="product-image-box" onclick="openProductDetail(${p.id})">
           <img src="${p.image}" alt="${p.name}" class="product-img" loading="lazy">
@@ -220,12 +222,18 @@ function renderProducts() {
           </div>
 
           <div class="product-actions">
-            <button class="btn-order-now" onclick="openInstantCheckout(${p.id})">
-              <span>⚡</span> অর্ডার করুন
-            </button>
-            <button class="btn-add-cart" onclick="addToCart(${p.id})">
-              <span>🛒</span> কার্ট
-            </button>
+            ${isOutOfStock ? `
+              <button class="btn-order-now" disabled style="opacity: 0.6; cursor: not-allowed; background: #94a3b8; width: 100%;">
+                <span>🚫</span> স্টক শেষ
+              </button>
+            ` : `
+              <button class="btn-order-now" onclick="openInstantCheckout(${p.id})">
+                <span>⚡</span> অর্ডার করুন
+              </button>
+              <button class="btn-add-cart" onclick="addToCart(${p.id})">
+                <span>🛒</span> কার্ট
+              </button>
+            `}
           </div>
         </div>
       </div>
@@ -319,6 +327,10 @@ function setupLiveSearch() {
 function addToCart(productId, customWeight = null, customPrice = null) {
   const product = AppState.products.find(p => p.id === productId);
   if (!product) return;
+  if (product.stock !== undefined && product.stock !== null && product.stock <= 0) {
+    showToast('দুঃখিত, এই পণ্যটির স্টক বর্তমানে শেষ!', 'error');
+    return;
+  }
 
   const card = document.getElementById(`product-${productId}`);
   let weight = customWeight;
@@ -449,6 +461,10 @@ function openInstantCheckout(productId = null) {
   if (productId) {
     const product = AppState.products.find(p => p.id === productId);
     if (!product) return;
+    if (product.stock !== undefined && product.stock !== null && product.stock <= 0) {
+      showToast('দুঃখিত, এই পণ্যটির স্টক বর্তমানে শেষ!', 'error');
+      return;
+    }
 
     const card = document.getElementById(`product-${productId}`);
     let weight = card?.dataset.selectedWeight || product.variations?.[0]?.weight || 'স্ট্যান্ডার্ড';
@@ -723,12 +739,18 @@ async function openProductDetail(productId) {
           <p class="detail-short-desc">${product.short_desc || ''}</p>
 
           <div style="display: flex; gap: 10px; margin-top: 20px;">
-            <button class="btn-order-now" style="flex: 2; padding: 12px; font-size: 15px;" onclick="closeProductDetail(); openInstantCheckout(${product.id})">
-              <span>⚡</span> সরাসরি অর্ডার করুন
-            </button>
-            <button class="btn-add-cart" style="flex: 1; padding: 12px; font-size: 14px;" onclick="addToCart(${product.id}); closeProductDetail();">
-              <span>🛒</span> কার্টে রাখুন
-            </button>
+            ${product.stock !== undefined && product.stock !== null && product.stock <= 0 ? `
+              <button class="btn-order-now" disabled style="flex: 1; padding: 12px; font-size: 15px; background: #94a3b8; opacity: 0.6; cursor: not-allowed;">
+                <span>🚫</span> বর্তমানে স্টক শেষ (Out of Stock)
+              </button>
+            ` : `
+              <button class="btn-order-now" style="flex: 2; padding: 12px; font-size: 15px;" onclick="closeProductDetail(); openInstantCheckout(${product.id})">
+                <span>⚡</span> সরাসরি অর্ডার করুন
+              </button>
+              <button class="btn-add-cart" style="flex: 1; padding: 12px; font-size: 14px;" onclick="addToCart(${product.id}); closeProductDetail();">
+                <span>🛒</span> কার্টে রাখুন
+              </button>
+            `}
           </div>
 
           <div class="detail-desc">

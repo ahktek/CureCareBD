@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cure-Care CMS | অ্যাডমিন কন্ট্রোল প্যানেল</title>
   <link rel="icon" type="image/png" href="/images/favicon.png">
-  <link rel="stylesheet" href="/admin/admin.css">
+  <link rel="stylesheet" href="/admin/admin.css?v=4.0">
 </head>
 <body>
 
@@ -605,7 +605,7 @@
           <div id="editVariationsList" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
 
-        <!-- PRODUCT GALLERY SECTION -->
+        <!-- PRODUCT GALLERY SECTION (Hero Canvas + 5 Slots) -->
         <div style="background: #fff; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 2px solid #0d9488; box-shadow: 0 2px 8px rgba(13,148,136,0.06);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
             <div>
@@ -613,26 +613,39 @@
                 <span>📸</span> পণ্য গ্যালারি ও ছবিসমূহ (Product Gallery & Multi-Images)
               </h4>
               <p style="font-size: 12px; color: #64748b; margin: 3px 0 0 0;">
-                একটি পণ্যের জন্য কমপক্ষে ৫টি ছবি আপলোড ও সাজানো যাবে। '⭐ প্রধান বানান' বাটনে ক্লিক করে মূল ছবি নির্ধারণ করুন।
+                সর্বোচ্চ ৫টি স্লট: Slot #1 মূল কভার, Slot #2 সেকেন্ডারি/হোভার এবং Slot #3-5 অন্যান্য অ্যাঙ্গেল।
               </p>
             </div>
-            <div style="background: #f0fdfa; border: 1px solid #99f6e4; color: #0f766e; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
-              মোট ছবি: <span id="editGalleryCount">0</span> টি
+            <div style="background: #ccfbf1; color: #0f766e; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px;">
+              মোট ছবি: <span id="editGalleryCount">0</span> / 5 টি
             </div>
           </div>
 
-          <!-- Gallery Thumbnails Grid -->
-          <div id="editGalleryGrid" class="gallery-grid-container" style="min-height: 110px; margin-bottom: 14px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">
-            <!-- Rendered by JS -->
+          <!-- Hero Canvas Preview (Large inspection) -->
+          <div id="editGalleryHeroCanvas" style="width: 100%; height: 260px; background: #0f172a; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; margin-bottom: 14px; border: 1px solid #1e293b;">
+            <img id="editGalleryHeroImg" src="" alt="Hero Preview" style="max-height: 240px; max-width: 95%; object-fit: contain; border-radius: 6px;">
+            <div id="editGalleryHeroBadge" style="position: absolute; top: 10px; left: 10px; background: #0d9488; color: #fff; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 4px;">
+              ⭐ মূল কভার ছবি (Primary Cover)
+            </div>
+            <div style="position: absolute; top: 10px; right: 10px; display: flex; gap: 6px;">
+              <button type="button" onclick="cropCurrentHeroImage()" style="background: rgba(0,0,0,0.7); color: #fff; border: 1px solid #475569; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer;">
+                ✂️ ছবি ক্রপ ও সাইজ ঠিক করুন
+              </button>
+            </div>
           </div>
 
-          <!-- Multi-Image Upload Zone -->
+          <!-- 5 Slots Thumbnails Grid -->
+          <div id="editGalleryGrid" class="gallery-grid-container" style="min-height: 110px; margin-bottom: 14px; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px;">
+            <!-- Rendered dynamically by renderEditGallery() in JS -->
+          </div>
+
+          <!-- Multi-Image Upload & Direct Link Zone -->
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px;">
             <div class="gallery-upload-dropzone" onclick="document.getElementById('editGalleryFileInput').click()" style="border: 2px dashed #0d9488; border-radius: 8px; padding: 16px; text-align: center; background: #f0fdfa; cursor: pointer; transition: all 0.2s;">
               <input type="file" id="editGalleryFileInput" multiple accept="image/*" style="display: none;" onchange="handleGalleryUploadFiles(event)">
               <div style="font-size: 24px; margin-bottom: 4px;">📤</div>
               <div style="font-size: 13px; font-weight: 700; color: #0f766e;">একাধিক ছবি আপলোড করুন</div>
-              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">এক সাথে ১ থেকে ৫+ টি ছবি নির্বাচন করুন (JPG, PNG, WEBP)</div>
+              <div style="font-size: 11px; color: #64748b; margin-top: 2px;">এক সাথে ১ থেকে ৫টি ছবি নির্বাচন করুন (JPG, PNG, WEBP)</div>
               <div id="uploadProgressText" style="font-size: 11px; font-weight: 600; color: #0284c7; margin-top: 6px; display: none;">⏳ ছবি আপলোড হচ্ছে...</div>
             </div>
 
@@ -642,10 +655,10 @@
                 🔗 ছবির সরাসরি লিংক (Image URL) যোগ করুন
               </label>
               <div style="display: flex; gap: 6px;">
-                <input type="url" id="editGalleryUrlInput" class="btn-sm" style="flex: 1; padding: 8px; background: #fff;" placeholder="https://images.unsplash.com/...">
+                <input type="url" id="editGalleryUrlInput" class="btn-sm" style="flex: 1; padding: 8px; background: #fff;" placeholder="https://...">
                 <button type="button" onclick="addUrlToEditGallery()" class="btn-primary" style="white-space: nowrap; padding: 8px 12px; font-size: 12px;">+ যোগ করুন</button>
               </div>
-              <div style="font-size: 11px; color: #94a3b8; margin-top: 6px;">ওয়েব লিংক বা হোস্ট করা ইমেজের লিঙ্ক পেস্ট করে সরাসরি গ্যালারিতে যোগ করুন।</div>
+              <div style="font-size: 11px; color: #94a3b8; margin-top: 6px;">সরাসরি ওয়েব লিংক পেস্ট করে গ্যালারির খালি স্লটে যুক্ত করুন।</div>
             </div>
           </div>
         </div>
@@ -665,17 +678,176 @@
           </div>
         </div>
 
-        <!-- Form Actions -->
-        <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 12px; border-top: 1px solid #e2e8f0;">
+        <!-- Form Actions (With Dynamic Reaction States) -->
+        <div style="display: flex; justify-content: flex-end; gap: 10px; padding-top: 14px; border-top: 1px solid #e2e8f0; position: sticky; bottom: -16px; background: #fff; z-index: 20;">
           <button type="button" onclick="closeEditProductModal()" class="btn-sm" style="padding: 8px 18px; font-size: 13px;">বাতিল</button>
-          <button type="submit" class="btn-primary" style="padding: 8px 24px; font-size: 13px; font-weight: 700;">
-            💾 পরিবর্তন সংরক্ষণ করুন (Save Changes)
+          <button type="submit" id="editSaveSubmitBtn" class="btn-primary" style="padding: 10px 28px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; transition: all 0.2s;">
+            <span id="editSaveBtnIcon">💾</span>
+            <span id="editSaveBtnText">পরিবর্তন সংরক্ষণ করুন (Save All Details)</span>
           </button>
         </div>
       </form>
     </div>
   </div>
 
-  <script src="/admin/admin.js"></script>
+  <!-- Modal: Quick Edit Product (Fast price, stock, category & status updates) -->
+  <div id="quickEditProductModal" class="admin-modal-overlay">
+    <div class="admin-modal-box" style="max-width: 520px; width: 95%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 10px;">
+        <div>
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--admin-primary); margin: 0;">
+            ⚡ কুইক এডিট (Quick Edit)
+          </h3>
+          <p id="quickEditProdSubtitle" style="font-size: 11px; color: #64748b; margin: 3px 0 0 0;">
+            মূল্য, স্টক এবং প্রদর্শন স্ট্যাটাস দ্রুত পরিবর্তন করুন
+          </p>
+        </div>
+        <button type="button" onclick="closeQuickEditModal()" style="border: none; background: #f1f5f9; width: 28px; height: 28px; border-radius: 50%; font-size: 14px; cursor: pointer;">✕</button>
+      </div>
+
+      <form id="quickEditProductForm" onsubmit="saveQuickEdit(event)">
+        <input type="hidden" id="quickEditProdId">
+
+        <div style="margin-bottom: 12px;">
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">ক্যাটাগরি</label>
+          <select id="quickEditProdCategory" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;"></select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">রেগুলার মূল্য (৳) *</label>
+            <input type="number" id="quickEditProdPrice" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;" required>
+          </div>
+          <div>
+            <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">অফার মূল্য (৳)</label>
+            <input type="number" id="quickEditProdDiscountPrice" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;">
+          </div>
+        </div>
+
+        <div style="margin-bottom: 14px;">
+          <label style="font-size: 12px; font-weight: 600; display: block; margin-bottom: 4px;">স্টক পরিমাণ (Stock)</label>
+          <input type="number" id="quickEditProdStock" class="btn-sm" style="width: 100%; padding: 8px; background: #fff;" required>
+          <div style="font-size: 11px; color: #ef4444; margin-top: 3px;">স্টক ০ হলে পণ্যটি ওয়েবসাইটে 'স্টক আউট' হিসেবে চিহ্নিত হবে এবং অর্ডার নেওয়া বন্ধ থাকবে।</div>
+        </div>
+
+        <div style="display: flex; gap: 14px; align-items: center; padding: 10px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0; margin-bottom: 16px;">
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+            <input type="checkbox" id="quickEditProdIsActive">
+            <span>🌐 ওয়েবসাইটে লাইভ (Active)</span>
+          </label>
+          <label style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; cursor: pointer;">
+            <input type="checkbox" id="quickEditProdIsFeatured">
+            <span>⭐ ফিচার্ড (Featured)</span>
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+          <button type="button" onclick="openEditDetailsFromQuickEdit()" class="btn-sm" style="background: none; border: none; color: #0284c7; cursor: pointer; font-size: 12px; font-weight: 600;">
+            ✏️ বিস্তারিত এডিটর খুলুন →
+          </button>
+          <div style="display: flex; gap: 8px;">
+            <button type="button" onclick="closeQuickEditModal()" class="btn-sm">বাতিল</button>
+            <button type="submit" class="btn-primary" style="padding: 8px 18px; font-weight: 700;">
+              💾 সেভ করুন
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Interactive Image Cropper (1:1, 4:5, 3:4, 16:9, Zoom & Rotate) -->
+  <div id="imageCropperModal" class="admin-modal-overlay" style="z-index: 10000;">
+    <div class="admin-modal-box" style="max-width: 720px; width: 95%; background: #0f172a; color: #fff; border-radius: 16px; border: 1px solid #334155;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; padding-bottom: 10px; margin-bottom: 12px;">
+        <div>
+          <h4 style="font-size: 15px; font-weight: 700; color: #fff; margin: 0;">✂️ ছবি ক্রপ ও সাইজ ঠিক করুন (Image Cropper)</h4>
+          <span style="font-size: 11px; color: #94a3b8;">প্রোডাক্ট কার্ডে সঠিক রেশিও অনুযায়ী নিখুঁতভাবে ছবি সেট করুন</span>
+        </div>
+        <button type="button" onclick="closeCropperModal()" style="border: none; background: #1e293b; color: #fff; width: 28px; height: 28px; border-radius: 50%; cursor: pointer;">✕</button>
+      </div>
+
+      <!-- Toolbar: Aspect Ratio Presets -->
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px;">
+        <button type="button" class="cropper-ratio-btn active" data-ratio="1" onclick="setCropperRatio(1, this)">1:1 স্কয়ার (কার্ড সাইজ)</button>
+        <button type="button" class="cropper-ratio-btn" data-ratio="0.8" onclick="setCropperRatio(0.8, this)">4:5 পোর্ট্রেট</button>
+        <button type="button" class="cropper-ratio-btn" data-ratio="0.75" onclick="setCropperRatio(0.75, this)">3:4 স্ট্যান্ডার্ড</button>
+        <button type="button" class="cropper-ratio-btn" data-ratio="1.777" onclick="setCropperRatio(1.777, this)">16:9 ব্যানার</button>
+        <button type="button" class="cropper-ratio-btn" data-ratio="0" onclick="setCropperRatio(0, this)">মূল আকার (Original)</button>
+        
+        <div style="margin-left: auto; display: flex; gap: 6px;">
+          <button type="button" onclick="rotateCropperImage()" style="background: #1e293b; color: #fff; border: 1px solid #475569; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;">🔄 ৯০° ঘুরান</button>
+          <button type="button" onclick="resetCropperTransform()" style="background: #1e293b; color: #94a3b8; border: 1px solid #475569; padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer;">রিসেট</button>
+        </div>
+      </div>
+
+      <!-- Viewport with Interactive Canvas Box -->
+      <div id="cropperViewport" style="width: 100%; height: 380px; background: #020617; border-radius: 12px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: grab; user-select: none;">
+        <img id="cropperSourceImg" src="" alt="Cropper Source" style="position: absolute; transform-origin: center center; pointer-events: none; max-width: none;">
+        
+        <!-- Frame Overlay Box -->
+        <div id="cropperFrame" style="position: absolute; border: 2px solid #0d9488; box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.78); border-radius: 8px; pointer-events: none;">
+          <!-- 3x3 Grid Lines -->
+          <div style="position: absolute; inset: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr 1fr; opacity: 0.35;">
+            <div style="border-right: 1px dashed #0d9488; border-bottom: 1px dashed #0d9488;"></div>
+            <div style="border-right: 1px dashed #0d9488; border-bottom: 1px dashed #0d9488;"></div>
+            <div style="border-bottom: 1px dashed #0d9488;"></div>
+            <div style="border-right: 1px dashed #0d9488; border-bottom: 1px dashed #0d9488;"></div>
+            <div style="border-right: 1px dashed #0d9488; border-bottom: 1px dashed #0d9488;"></div>
+            <div style="border-bottom: 1px dashed #0d9488;"></div>
+            <div style="border-right: 1px dashed #0d9488;"></div>
+            <div style="border-right: 1px dashed #0d9488;"></div>
+            <div></div>
+          </div>
+        </div>
+        <div style="position: absolute; bottom: 8px; font-size: 11px; background: rgba(0,0,0,0.6); padding: 3px 10px; border-radius: 20px; color: #94a3b8; pointer-events: none;">
+          মাউস টেনে পজিশন করুন • চাকা ঘুরিয়ে জুম করুন
+        </div>
+      </div>
+
+      <!-- Zoom Slider Controls -->
+      <div style="display: flex; align-items: center; gap: 12px; margin-top: 12px; padding: 8px 12px; background: #1e293b; border-radius: 8px;">
+        <span style="font-size: 12px; color: #94a3b8;">🔍 জুম:</span>
+        <input type="range" id="cropperZoomSlider" min="0.6" max="3" step="0.05" value="1" oninput="updateCropperZoom(parseFloat(this.value))" style="flex: 1; accent-color: #0d9488; cursor: pointer;">
+        <span id="cropperZoomLabel" style="font-size: 12px; font-family: monospace; color: #fff; width: 44px; text-align: right;">100%</span>
+      </div>
+
+      <!-- Actions -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; border-top: 1px solid #1e293b; padding-top: 12px;">
+        <button type="button" onclick="skipCroppingAndUseOriginal()" style="background: none; border: none; color: #94a3b8; font-size: 12px; cursor: pointer;">
+          ক্রপ ছাড়া মূল ছবি রাখুন (Use Original)
+        </button>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" onclick="closeCropperModal()" class="btn-sm" style="background: #334155; color: #fff;">বাতিল</button>
+          <button type="button" onclick="applyAndSaveCroppedImage()" class="btn-primary" style="padding: 8px 20px; font-weight: 700; background: #0d9488;">
+            ✓ ক্রপ সম্পন্ন করুন
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Floating Animated Save Status Notification Popup -->
+  <div id="saveStatusPopup" class="save-popup-container" style="display: none;">
+    <div id="savePopupCard" class="save-popup-card">
+      <div class="save-popup-glow"></div>
+      <div style="display: flex; align-items: center; gap: 12px; position: relative; z-index: 2;">
+        <div id="savePopupIconBox" class="save-popup-icon-box">
+          <!-- Rendered by JS -->
+        </div>
+        <div style="flex: 1; min-width: 0;">
+          <h5 id="savePopupTitle" style="margin: 0; font-size: 14px; font-weight: 700; color: #fff;"></h5>
+          <p id="savePopupMessage" style="margin: 3px 0 0 0; font-size: 12px; color: #cbd5e1; line-height: 1.4;"></p>
+          <div id="savePopupRetryBox" style="margin-top: 8px; display: none;">
+            <button type="button" onclick="saveProductDetails()" class="btn-sm" style="background: #ef4444; color: #fff; padding: 4px 10px; font-size: 11px; font-weight: 700;">পুনরায় চেষ্টা করুন (Retry)</button>
+          </div>
+        </div>
+        <button type="button" onclick="hideSaveStatusPopup()" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 14px; padding: 4px;">✕</button>
+      </div>
+      <div id="savePopupProgressLine" class="save-popup-progress"></div>
+    </div>
+  </div>
+
+  <script src="/admin/admin.js?v=4.0"></script>
 </body>
 </html>

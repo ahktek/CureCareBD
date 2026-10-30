@@ -435,3 +435,250 @@ body {
   background: #e6fffa !important;
   border-color: #0f766e !important;
 }
+
+
+/* ==========================================================================
+   CureCare - Multi-Image Gallery, Cropper, Quick Edit & Save Status Styling
+   ========================================================================== */
+
+.gallery-grid-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+@media (max-width: 768px) {
+  .gallery-grid-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.gallery-slot-card {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  background: #f1f5f9;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.gallery-slot-card.is-primary {
+  border-color: #0d9488;
+  box-shadow: 0 0 0 2px rgba(13, 148, 136, 0.25);
+}
+
+.gallery-slot-card:hover {
+  transform: translateY(-2px);
+  border-color: #94a3b8;
+}
+
+.gallery-slot-card.slot-empty {
+  border: 2px dashed #cbd5e1;
+  background: #f8fafc;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.gallery-slot-card.slot-empty:hover {
+  border-color: #0d9488;
+  background: #f0fdfa;
+}
+
+.gallery-slot-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-slot-badge {
+  position: relative;
+  z-index: 2;
+  margin: 4px;
+  align-self: flex-start;
+  background: rgba(0, 0, 0, 0.65);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+.gallery-slot-badge.badge-primary {
+  background: #0d9488;
+}
+
+.gallery-slot-actions {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  padding: 4px;
+  background: linear-gradient(to top, rgba(0,0,0,0.7), transparent);
+}
+
+.slot-btn {
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+  color: #fff;
+  font-size: 10px;
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.slot-btn:hover {
+  background: #0d9488;
+}
+
+.slot-btn.slot-delete-btn:hover {
+  background: #ef4444;
+}
+
+.gallery-slot-footer {
+  position: relative;
+  z-index: 2;
+  background: rgba(0, 0, 0, 0.7);
+  color: #e2e8f0;
+  font-size: 9px;
+  text-align: center;
+  padding: 2px 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Cropper Toolbar Ratio Buttons */
+.cropper-ratio-btn {
+  background: #1e293b;
+  color: #cbd5e1;
+  border: 1px solid #334155;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.cropper-ratio-btn.active,
+.cropper-ratio-btn:hover {
+  background: #0d9488;
+  color: #fff;
+  border-color: #0d9488;
+}
+
+/* Floating Save Status Popup */
+.save-popup-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 99999;
+  max-width: 380px;
+  width: 90%;
+  animation: slideInDown 0.25s ease-out;
+}
+
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-15px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.save-popup-card {
+  position: relative;
+  background: #090d16;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+}
+
+.save-popup-card.status-saving {
+  border-color: #0d9488;
+}
+
+.save-popup-card.status-success {
+  border-color: #10b981;
+}
+
+.save-popup-card.status-error {
+  border-color: #ef4444;
+}
+
+.save-popup-icon-box {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.status-saving .save-popup-icon-box { background: rgba(13, 148, 136, 0.2); color: #0d9488; }
+.status-success .save-popup-icon-box { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.status-error .save-popup-icon-box { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+.save-popup-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+}
+
+.status-saving .save-popup-progress { background: #0d9488; }
+.status-success .save-popup-progress { background: #10b981; }
+
+@keyframes shrinkLine {
+  from { width: 100%; }
+  to { width: 0%; }
+}
+
+@keyframes pulseLine {
+  0% { opacity: 0.3; }
+  50% { opacity: 1; }
+  100% { opacity: 0.3; }
+}
+
+/* 1-Click Status Badge Button */
+.status-toggle-btn {
+  border: none;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  transition: all 0.2s;
+}
+.status-toggle-btn.active {
+  background: #dcfce7;
+  color: #15803d;
+}
+.status-toggle-btn.active:hover {
+  background: #bbf7d0;
+}
+.status-toggle-btn.inactive {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.status-toggle-btn.inactive:hover {
+  background: #e2e8f0;
+}

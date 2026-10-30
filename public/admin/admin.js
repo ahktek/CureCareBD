@@ -257,62 +257,187 @@ async function deleteOrder(id) {
 }
 
 // -------------------------------------------------------------
-// 3. Products Tab
+// 3. Products Tab (Dual Edit Architecture & Real-Time Gallery)
 // -------------------------------------------------------------
+AdminState.editingProductId = null;
+AdminState.editingGallery = [];
+AdminState.editingPrimaryImage = '';
+AdminState.editingVariations = [];
+AdminState.cropperState = {
+  targetIndex: 0,
+  imageSrc: '',
+  zoom: 1,
+  rotation: 0,
+  pan: { x: 0, y: 0 },
+  aspectRatio: 1
+};
+
 async function loadProducts() {
   try {
     const res = await fetch('/api/admin/products', { headers: authHeaders() });
     const products = await res.json();
     AdminState.products = products;
-
-    const tbody = document.getElementById('productsTableTbody');
-    tbody.innerHTML = products.map(p => {
-      const galleryCount = (p.gallery && p.gallery.length) || (p.image ? 1 : 0);
-      return `
-      <tr>
-        <td>
-          <div style="position: relative; width: 44px; height: 44px; display: inline-block;">
-            <img src="${p.image || (p.gallery && p.gallery[0]) || '/images/placeholder.png'}" style="width: 44px; height: 44px; border-radius: 6px; object-fit: cover;">
-            ${galleryCount > 1 ? `<span style="position: absolute; bottom: -3px; right: -3px; background: #0f766e; color: #fff; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 5px; border: 1px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2);">${galleryCount}</span>` : ''}
-          </div>
-        </td>
-        <td>
-          <strong>${p.name_bn || p.name}</strong>
-          <div style="font-size: 11px; color: #64748b;">${p.name} | SKU: ${p.sku || 'N/A'}</div>
-          ${p.is_active === 0 ? '<span style="font-size: 10px; background: #fee2e2; color: #b91c1c; padding: 1px 5px; border-radius: 4px; font-weight: 600;">নিষ্ক্রিয় (Hidden)</span>' : ''}
-          ${p.is_featured ? '<span style="font-size: 10px; background: #fef3c7; color: #b45309; padding: 1px 5px; border-radius: 4px; font-weight: 600; margin-left: 4px;">ফিচার্ড ⭐</span>' : ''}
-        </td>
-        <td>${p.category_name_bn || p.category_name || '-'}</td>
-        <td>
-          <strong>৳${p.discount_price || p.base_price}</strong>
-          ${p.discount_price ? `<span style="text-decoration: line-through; color: #94a3b8; font-size: 11px; margin-left: 4px;">৳${p.base_price}</span>` : ''}
-        </td>
-        <td>
-          <span style="font-weight: 700; color: ${p.stock <= 10 ? '#ef4444' : '#10b981'};">
-            ${p.stock} টি
-          </span>
-        </td>
-        <td>${p.variations ? p.variations.length : 0} টি সাইজ</td>
-        <td>
-          <div style="display: flex; gap: 6px; align-items: center;">
-            <button onclick="openEditProductModal(${p.id})" class="btn-sm" style="background: #0d9488; color: #fff; font-weight: 600; padding: 5px 10px; border-radius: 4px; border: none; cursor: pointer;" title="পণ্যের বিস্তারিত তথ্য ও গ্যালারি এডিট">
-              ✏️ Edit Details
-            </button>
-            <button onclick="deleteProduct(${p.id})" class="btn-sm btn-danger-sm" title="পণ্য ডিলিট করুন">
-              🗑️
-            </button>
-          </div>
-        </td>
-      </tr>
-      `;
-    }).join('');
+    renderProductsTable();
   } catch (err) {
     console.error('Failed to load products:', err);
   }
 }
 
+function renderProductsTable() {
+  const tbody = document.getElementById('productsTableTbody');
+  if (!tbody) return;
+
+  tbody.innerHTML = AdminState.products.map(p => {
+    const galleryCount = (p.gallery && p.gallery.length) || (p.image ? 1 : 0);
+    const isOutOfStock = p.stock !== undefined && p.stock !== null && p.stock <= 0;
+    const stockDisplay = isOutOfStock
+      ? '<span style="background: #fee2e2; color: #b91c1c; font-weight: 700; padding: 2px 8px; border-radius: 4px; font-size: 11px;">স্টক শেষ (Out)</span>'
+      : `<span style="font-weight: 700; color: ${p.stock <= 10 ? '#f59e0b' : '#10b981'};">${p.stock} টি</span>`;
+
+    return `
+    <tr>
+      <td>
+        <div style="position: relative; width: 44px; height: 44px; display: inline-block;">
+          <img src="${p.image || (p.gallery && p.gallery[0]) || '/images/placeholder.png'}" style="width: 44px; height: 44px; border-radius: 6px; object-fit: cover;">
+          ${galleryCount > 1 ? `<span style="position: absolute; bottom: -3px; right: -3px; background: #0f766e; color: #fff; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 5px; border: 1px solid #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.2);" title="${galleryCount} টি ছবি গ্যালারিতে আছে">${galleryCount}</span>` : ''}
+        </div>
+      </td>
+      <td>
+        <strong>${p.name_bn || p.name}</strong>
+        <div style="font-size: 11px; color: #64748b;">${p.name} | SKU: ${p.sku || 'N/A'}</div>
+        <div style="margin-top: 4px; display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+          <button type="button" onclick="toggleProductActive(${p.id}, event)" class="status-toggle-btn ${p.is_active ? 'active' : 'inactive'}" title="ক্লিক করে স্ট্যাটাস পরিবর্তন করুন">
+            ${p.is_active ? '🟢 সক্রিয় (Live)' : '⚪ নিষ্ক্রিয় (Hidden)'}
+          </button>
+          ${p.is_featured ? '<span style="font-size: 10px; background: #fef3c7; color: #b45309; padding: 1px 5px; border-radius: 4px; font-weight: 600;">ফিচার্ড ⭐</span>' : ''}
+        </div>
+      </td>
+      <td>${p.category_name_bn || p.category_name || '-'}</td>
+      <td>
+        <strong>৳${p.discount_price || p.base_price}</strong>
+        ${p.discount_price ? `<span style="text-decoration: line-through; color: #94a3b8; font-size: 11px; margin-left: 4px;">৳${p.base_price}</span>` : ''}
+      </td>
+      <td>${stockDisplay}</td>
+      <td>${p.variations ? p.variations.length : 0} টি ভেরিয়েন্ট</td>
+      <td>
+        <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
+          <button onclick="openQuickEditModal(${p.id})" class="btn-sm" style="background: #0284c7; color: #fff; font-weight: 600; padding: 5px 9px; border-radius: 4px; border: none; cursor: pointer;" title="মূল্য ও স্টক কুইক এডিট করুন">
+            ⚡ Quick Edit
+          </button>
+          <button onclick="openEditProductModal(${p.id})" class="btn-sm" style="background: #0d9488; color: #fff; font-weight: 600; padding: 5px 9px; border-radius: 4px; border: none; cursor: pointer;" title="গ্যালারি, ছবি ক্রপার ও বিস্তারিত এডিট করুন">
+            ✏️ Edit Details
+          </button>
+          <button onclick="deleteProduct(${p.id})" class="btn-sm btn-danger-sm" title="পণ্য ডিলিট করুন">
+            🗑️
+          </button>
+        </div>
+      </td>
+    </tr>
+    `;
+  }).join('');
+}
+
+// -------------------------------------------------------------
+// 1-Click Fast Visibility Toggle
+// -------------------------------------------------------------
+async function toggleProductActive(id, event) {
+  if (event) event.stopPropagation();
+  try {
+    const res = await fetch(`/api/admin/products/${id}/toggle-status`, {
+      method: 'PATCH',
+      headers: authHeaders()
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const p = AdminState.products.find(item => item.id == id);
+      if (p) p.is_active = data.is_active;
+      showSaveStatusPopup('success', `পণ্যের স্ট্যাটাস ${data.is_active ? 'সক্রিয় (Active)' : 'নিষ্ক্রিয় (Hidden)'} করা হয়েছে`);
+      renderProductsTable();
+    } else {
+      alert('স্ট্যাটাস পরিবর্তন করা সম্ভব হয়নি');
+    }
+  } catch (err) {
+    alert('সার্ভার এরর: ' + err.message);
+  }
+}
+
+// -------------------------------------------------------------
+// Quick Edit Modal Logic
+// -------------------------------------------------------------
+function openQuickEditModal(id) {
+  const p = AdminState.products.find(item => item.id == id);
+  if (!p) return;
+
+  document.getElementById('quickEditProdId').value = p.id;
+  document.getElementById('quickEditProdSubtitle').textContent = `${p.name_bn || p.name} (SKU: ${p.sku || 'N/A'})`;
+
+  // Categories
+  const catSelect = document.getElementById('quickEditProdCategory');
+  catSelect.innerHTML = AdminState.categories.map(c => `
+    <option value="${c.id}" ${p.category_id == c.id ? 'selected' : ''}>${c.name_bn || c.name}</option>
+  `).join('');
+
+  document.getElementById('quickEditProdPrice').value = p.base_price || '';
+  document.getElementById('quickEditProdDiscountPrice').value = p.discount_price || '';
+  document.getElementById('quickEditProdStock').value = p.stock !== undefined ? p.stock : 100;
+  document.getElementById('quickEditProdIsActive').checked = p.is_active !== 0;
+  document.getElementById('quickEditProdIsFeatured').checked = !!p.is_featured;
+
+  document.getElementById('quickEditProductModal').classList.add('active');
+}
+
+function closeQuickEditModal() {
+  document.getElementById('quickEditProductModal').classList.remove('active');
+}
+
+function openEditDetailsFromQuickEdit() {
+  const id = document.getElementById('quickEditProdId').value;
+  closeQuickEditModal();
+  if (id) openEditProductModal(id);
+}
+
+async function saveQuickEdit(e) {
+  if (e) e.preventDefault();
+  const id = document.getElementById('quickEditProdId').value;
+  if (!id) return;
+
+  const payload = {
+    category_id: document.getElementById('quickEditProdCategory').value,
+    base_price: parseFloat(document.getElementById('quickEditProdPrice').value),
+    discount_price: document.getElementById('quickEditProdDiscountPrice').value ? parseFloat(document.getElementById('quickEditProdDiscountPrice').value) : null,
+    stock: parseInt(document.getElementById('quickEditProdStock').value) || 0,
+    is_active: document.getElementById('quickEditProdIsActive').checked ? 1 : 0,
+    is_featured: document.getElementById('quickEditProdIsFeatured').checked ? 1 : 0
+  };
+
+  try {
+    showSaveStatusPopup('saving', 'কুইক এডিট আপডেট হচ্ছে...');
+    const res = await fetch(`/api/admin/products/${id}/quick-edit`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${AdminState.token}`
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (res.ok) {
+      showSaveStatusPopup('success', 'মূল্য ও স্টক সফলভাবে সংরক্ষিত হয়েছে!');
+      closeQuickEditModal();
+      await loadProducts();
+    } else {
+      const err = await res.json();
+      showSaveStatusPopup('error', err.error || 'আপডেট করতে সমস্যা হয়েছে');
+    }
+  } catch (err) {
+    showSaveStatusPopup('error', err.message);
+  }
+}
+
+// -------------------------------------------------------------
+// Add Product Modal
+// -------------------------------------------------------------
 function openAddProductModal() {
-  // Populate category select
   const catSelect = document.getElementById('prodCategory');
   catSelect.innerHTML = AdminState.categories.map(c => `
     <option value="${c.id}">${c.name_bn || c.name}</option>
@@ -383,7 +508,7 @@ async function saveProduct(e) {
       body: JSON.stringify(payload)
     });
     if (res.ok) {
-      alert('নতুন পণ্য সফলভাবে যুক্ত হয়েছে! এখন আপনি "Edit Details" থেকে একাধিক ছবি যোগ করতে পারবেন।');
+      alert('নতুন পণ্য সফলভাবে যোগ করা হয়েছে! এখন আপনি "Edit Details" থেকে একাধিক ছবি ও ক্রপ সুবিধা পরিচালনা করতে পারেন।');
       closeAddProductModal();
       loadProducts();
     } else {
@@ -395,13 +520,8 @@ async function saveProduct(e) {
 }
 
 // -------------------------------------------------------------
-// Edit Product Details & Gallery Logic
+// Detailed Edit Product & 5-Slot Gallery Logic
 // -------------------------------------------------------------
-AdminState.editingProductId = null;
-AdminState.editingGallery = [];
-AdminState.editingPrimaryImage = '';
-AdminState.editingVariations = [];
-
 async function openEditProductModal(productId) {
   let product = AdminState.products.find(p => p.id === productId);
   if (!product) {
@@ -413,7 +533,7 @@ async function openEditProductModal(productId) {
     }
   }
   if (!product) {
-    alert('পণ্য খুঁজে পাওয়া যায়নি');
+    alert('পণ্যের তথ্য পাওয়া যায়নি');
     return;
   }
 
@@ -440,7 +560,7 @@ async function openEditProductModal(productId) {
   AdminState.editingVariations = Array.isArray(product.variations) ? JSON.parse(JSON.stringify(product.variations)) : [];
   renderEditVariations();
 
-  // Unified Gallery Construction: link placeholder image and all additional images
+  // Unified Gallery Construction: enforce 5 image limit
   let gallery = [];
   if (Array.isArray(product.gallery) && product.gallery.length > 0) {
     gallery = [...product.gallery];
@@ -453,13 +573,11 @@ async function openEditProductModal(productId) {
     }
   }
 
-  // Filter invalid or blank strings
   gallery = gallery.filter(img => img && typeof img === 'string' && img.trim().length > 0);
-
-  AdminState.editingGallery = gallery;
+  AdminState.editingGallery = gallery.slice(0, 5);
   AdminState.editingPrimaryImage = product.image || (gallery[0] || '');
-  renderEditGallery();
 
+  renderEditGallery();
   document.getElementById('editProductModal').classList.add('active');
 }
 
@@ -470,79 +588,117 @@ function closeEditProductModal() {
   AdminState.editingPrimaryImage = '';
 }
 
+// Render 5 Gallery Slots & Hero Preview
 function renderEditGallery() {
-  const container = document.getElementById('editGalleryGrid');
-  const countSpan = document.getElementById('editGalleryCount');
-  if (countSpan) countSpan.textContent = AdminState.editingGallery.length;
+  const grid = document.getElementById('editGalleryGrid');
+  const countEl = document.getElementById('editGalleryCount');
+  const heroImg = document.getElementById('editGalleryHeroImg');
+  const heroCanvas = document.getElementById('editGalleryHeroCanvas');
 
-  if (!AdminState.editingGallery || AdminState.editingGallery.length === 0) {
-    container.innerHTML = `
-      <div style="grid-column: 1/-1; text-align: center; color: #94a3b8; font-size: 13px; padding: 24px;">
-        📸 এই পণ্যের গ্যালারিতে কোনো ছবি নেই। নিচে থেকে একাধিক ফাইল আপলোড করুন অথবা ছবির লিঙ্ক যোগ করুন।
-      </div>
-    `;
-    return;
+  const gallery = AdminState.editingGallery || [];
+  const primaryImg = AdminState.editingPrimaryImage || gallery[0] || '';
+  countEl.textContent = gallery.length;
+
+  // Update Hero Preview
+  if (primaryImg) {
+    heroCanvas.style.display = 'flex';
+    heroImg.src = primaryImg;
+  } else {
+    heroCanvas.style.display = 'none';
   }
 
-  // Ensure there is always a primary image if gallery has items
-  if (!AdminState.editingPrimaryImage && AdminState.editingGallery.length > 0) {
-    AdminState.editingPrimaryImage = AdminState.editingGallery[0];
+  // Render 5 Dedicated Slots
+  let html = '';
+  for (let i = 0; i < 5; i++) {
+    const imgUrl = gallery[i];
+    const isPrimary = imgUrl && imgUrl === primaryImg;
+    const slotLabel = i === 0 ? 'মূল কভার' : (i === 1 ? 'হোভার অ্যাঙ্গেল' : `অ্যাঙ্গেল #${i + 1}`);
+
+    if (imgUrl) {
+      html += `
+        <div class="gallery-slot-card ${isPrimary ? 'is-primary' : ''}">
+          <img src="${imgUrl}" alt="Slot ${i + 1}" class="gallery-slot-img">
+          
+          <div class="gallery-slot-badge ${isPrimary ? 'badge-primary' : ''}">
+            ${isPrimary ? '⭐ কভার' : `#${i + 1}`}
+          </div>
+
+          <div class="gallery-slot-actions">
+            <button type="button" onclick="openCropperForSlot('${imgUrl}', ${i})" title="ছবি ক্রপ করুন" class="slot-btn slot-crop-btn">✂️</button>
+            ${!isPrimary ? `<button type="button" onclick="setPrimaryGalleryImage('${imgUrl}')" title="মূল ছবি হিসেবে নির্ধারণ করুন" class="slot-btn slot-star-btn">⭐</button>` : ''}
+            <button type="button" onclick="removeGalleryImage(${i})" title="মুছে ফেলুন" class="slot-btn slot-delete-btn">🗑️</button>
+          </div>
+
+          <div class="gallery-slot-footer">${slotLabel}</div>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="gallery-slot-card slot-empty" onclick="document.getElementById('editGalleryFileInput').click()" title="নতুন ছবি যোগ করতে ক্লিক করুন">
+          <div style="font-size: 20px; color: #94a3b8;">+</div>
+          <div style="font-size: 11px; font-weight: 600; color: #64748b;">স্লট #${i + 1}</div>
+          <div style="font-size: 9px; color: #94a3b8;">${slotLabel}</div>
+        </div>
+      `;
+    }
   }
 
-  container.innerHTML = AdminState.editingGallery.map((imgUrl, idx) => {
-    const isPrimary = (imgUrl === AdminState.editingPrimaryImage);
-    const safeUrl = imgUrl.replace(/"/g, '&quot;');
-    return `
-      <div class="gallery-card ${isPrimary ? 'is-primary' : ''}">
-        <div class="gallery-card-img-wrap">
-          ${isPrimary ? '<span class="gallery-primary-badge">⭐ প্রধান ছবি</span>' : ''}
-          <img src="${safeUrl}" class="gallery-card-img" alt="Gallery Photo" onerror="this.src='/images/placeholder.png'">
-        </div>
-        <div class="gallery-card-actions">
-          ${isPrimary ? `
-            <span style="font-size: 11px; color: #0d9488; font-weight: 700;">প্রধান</span>
-          ` : `
-            <button type="button" onclick="setGalleryPrimaryImage(${idx})" class="gallery-btn-action gallery-btn-set-main" title="এই ছবিকে মূল/প্রধান ছবি বানান">
-              ⭐ প্রধান বানান
-            </button>
-          `}
-          <button type="button" onclick="removeGalleryImage(${idx})" class="gallery-btn-action gallery-btn-delete" title="গ্যালারি থেকে মুছে ফেলুন">
-            🗑️ মুছুন
-          </button>
-        </div>
-      </div>
-    `;
-  }).join('');
+  grid.innerHTML = html;
 }
 
-function setGalleryPrimaryImage(index) {
-  if (AdminState.editingGallery[index]) {
-    AdminState.editingPrimaryImage = AdminState.editingGallery[index];
-    renderEditGallery();
-  }
+function setPrimaryGalleryImage(url) {
+  AdminState.editingPrimaryImage = url;
+  const remaining = AdminState.editingGallery.filter(u => u !== url);
+  AdminState.editingGallery = [url, ...remaining].slice(0, 5);
+  renderEditGallery();
 }
 
 function removeGalleryImage(index) {
-  const removedUrl = AdminState.editingGallery.splice(index, 1)[0];
-  if (removedUrl === AdminState.editingPrimaryImage) {
+  const removed = AdminState.editingGallery[index];
+  AdminState.editingGallery.splice(index, 1);
+  if (removed === AdminState.editingPrimaryImage) {
     AdminState.editingPrimaryImage = AdminState.editingGallery[0] || '';
   }
   renderEditGallery();
 }
 
+function addUrlToEditGallery() {
+  const input = document.getElementById('editGalleryUrlInput');
+  const url = input.value.trim();
+  if (!url) return alert('অনুগ্রহ করে একটি সঠিক ছবির লিঙ্ক দিন');
+
+  if (AdminState.editingGallery.length >= 5) {
+    return alert('সর্বোচ্চ ৫টি ছবি যোগ করা সম্ভব। নতুন ছবি যোগ করতে পূর্বের ছবি মুছুন।');
+  }
+
+  if (AdminState.editingGallery.includes(url)) {
+    return alert('এই ছবিটি ইতিমধ্যে গ্যালারিতে আছে');
+  }
+
+  AdminState.editingGallery.push(url);
+  if (!AdminState.editingPrimaryImage) AdminState.editingPrimaryImage = url;
+  input.value = '';
+  renderEditGallery();
+}
+
 async function handleGalleryUploadFiles(e) {
-  const files = e.target.files;
+  const files = Array.from(e.target.files);
   if (!files || files.length === 0) return;
+
+  const remainingSlots = 5 - AdminState.editingGallery.length;
+  if (remainingSlots <= 0) {
+    alert('সর্বোচ্চ ৫টি ছবি যোগ করা সম্ভব।');
+    return;
+  }
+
+  const filesToUpload = files.slice(0, remainingSlots);
+  const formData = new FormData();
+  filesToUpload.forEach(f => formData.append('images', f));
 
   const progressEl = document.getElementById('uploadProgressText');
   if (progressEl) {
     progressEl.style.display = 'block';
-    progressEl.textContent = `⏳ ${files.length} টি ছবি আপলোড হচ্ছে...`;
-  }
-
-  const formData = new FormData();
-  for (let i = 0; i < files.length; i++) {
-    formData.append('images', files[i]);
+    progressEl.textContent = `⏳ ${filesToUpload.length} টি ছবি আপলোড হচ্ছে...`;
   }
 
   try {
@@ -553,60 +709,41 @@ async function handleGalleryUploadFiles(e) {
     });
     const data = await res.json();
     if (res.ok && data.urls && data.urls.length > 0) {
-      data.urls.forEach(url => {
-        if (!AdminState.editingGallery.includes(url)) {
-          AdminState.editingGallery.push(url);
-        }
-      });
+      data.urls.forEach(u => AdminState.editingGallery.push(u));
       if (!AdminState.editingPrimaryImage && AdminState.editingGallery.length > 0) {
         AdminState.editingPrimaryImage = AdminState.editingGallery[0];
       }
       renderEditGallery();
     } else {
-      alert(data.error || 'ছবি আপলোড করতে ব্যর্থ হয়েছে');
+      alert(data.error || 'ছবি আপলোড করা যায়নি');
     }
   } catch (err) {
-    console.error('Gallery file upload error:', err);
-    alert('সার্ভারে ছবি আপলোড করতে সমস্যা হয়েছে');
+    console.error('Upload multiple error:', err);
+    alert('সার্ভার এরর');
   } finally {
     if (progressEl) progressEl.style.display = 'none';
     e.target.value = '';
   }
 }
 
-function addUrlToEditGallery() {
-  const input = document.getElementById('editGalleryUrlInput');
-  const url = input.value.trim();
-  if (!url) {
-    alert('অনুগ্রহ করে ছবির একটি বৈধ URL লিখুন');
-    return;
-  }
-  if (!AdminState.editingGallery.includes(url)) {
-    AdminState.editingGallery.push(url);
-  }
-  if (!AdminState.editingPrimaryImage) {
-    AdminState.editingPrimaryImage = url;
-  }
-  input.value = '';
-  renderEditGallery();
-}
-
-// Edit Variations Rows
+// -------------------------------------------------------------
+// Variations Editor Logic
+// -------------------------------------------------------------
 function renderEditVariations() {
   const container = document.getElementById('editVariationsList');
   if (!container) return;
   if (!AdminState.editingVariations || AdminState.editingVariations.length === 0) {
-    container.innerHTML = `<div style="font-size: 12px; color: #94a3b8;">কোনো অতিরিক্ত ভেরিয়েশন সাইজ যুক্ত নেই (ঐচ্ছিক)।</div>`;
+    container.innerHTML = `<div style="font-size: 12px; color: #94a3b8;">কোনো ভেরিয়েশন সাইজ যুক্ত করা হয়নি (ঐচ্ছিক)।</div>`;
     return;
   }
 
   container.innerHTML = AdminState.editingVariations.map((v, i) => `
     <div style="display: flex; gap: 8px; align-items: center; background: #fff; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
-      <input type="text" placeholder="ওজন/সাইজ (যেমন: 500g)" value="${v.weight || ''}" onchange="updateEditVariation(${i}, 'weight', this.value)" class="btn-sm" style="flex: 2; padding: 6px;">
+      <input type="text" placeholder="সাইজ/ওজন (যেমন: 100g, 200g)" value="${v.weight || ''}" onchange="updateEditVariation(${i}, 'weight', this.value)" class="btn-sm" style="flex: 2; padding: 6px;">
       <input type="number" placeholder="রেগুলার মূল্য" value="${v.price || ''}" onchange="updateEditVariation(${i}, 'price', this.value)" class="btn-sm" style="flex: 1.5; padding: 6px;">
       <input type="number" placeholder="অফার মূল্য" value="${v.discount_price || ''}" onchange="updateEditVariation(${i}, 'discount_price', this.value)" class="btn-sm" style="flex: 1.5; padding: 6px;">
       <input type="number" placeholder="স্টক" value="${v.stock !== undefined ? v.stock : 50}" onchange="updateEditVariation(${i}, 'stock', this.value)" class="btn-sm" style="flex: 1; padding: 6px;">
-      <button type="button" onclick="removeEditVariation(${i})" class="btn-sm btn-danger-sm" style="padding: 6px 10px;" title="ভেরিয়েশন মুছে ফেলুন">✕</button>
+      <button type="button" onclick="removeEditVariation(${i})" class="btn-sm btn-danger-sm" style="padding: 6px 10px;" title="মুছে ফেলুন">✕</button>
     </div>
   `).join('');
 }
@@ -630,8 +767,279 @@ function removeEditVariation(idx) {
   renderEditVariations();
 }
 
+// -------------------------------------------------------------
+// Interactive HTML5 Canvas Image Cropper Logic
+// -------------------------------------------------------------
+let cropperImgObj = null;
+let cropperDrag = { isDragging: false, startX: 0, startY: 0 };
+
+function openCropperForSlot(imgUrl, slotIndex) {
+  const modal = document.getElementById('imageCropperModal');
+  const sourceImg = document.getElementById('cropperSourceImg');
+
+  AdminState.cropperState.targetIndex = slotIndex;
+  AdminState.cropperState.imageSrc = imgUrl;
+  AdminState.cropperState.zoom = 1;
+  AdminState.cropperState.rotation = 0;
+  AdminState.cropperState.pan = { x: 0, y: 0 };
+  AdminState.cropperState.aspectRatio = 1;
+
+  document.getElementById('cropperZoomSlider').value = 1;
+  document.getElementById('cropperZoomLabel').textContent = '100%';
+
+  document.querySelectorAll('.cropper-ratio-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.ratio === "1");
+  });
+
+  sourceImg.src = imgUrl;
+  cropperImgObj = new Image();
+  cropperImgObj.crossOrigin = 'anonymous';
+  cropperImgObj.src = imgUrl;
+  cropperImgObj.onload = () => {
+    updateCropperTransform();
+    repositionCropperFrame();
+  };
+
+  setupCropperDragEvents();
+  modal.classList.add('active');
+}
+
+function closeCropperModal() {
+  document.getElementById('imageCropperModal').classList.remove('active');
+}
+
+function cropCurrentHeroImage() {
+  const primary = AdminState.editingPrimaryImage || (AdminState.editingGallery[0] || '');
+  if (!primary) return alert('কোনো ছবি নির্বাচিত নেই');
+  const idx = AdminState.editingGallery.indexOf(primary);
+  openCropperForSlot(primary, idx >= 0 ? idx : 0);
+}
+
+function setCropperRatio(ratio, btn) {
+  AdminState.cropperState.aspectRatio = ratio;
+  document.querySelectorAll('.cropper-ratio-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  repositionCropperFrame();
+}
+
+function updateCropperZoom(val) {
+  AdminState.cropperState.zoom = val;
+  document.getElementById('cropperZoomLabel').textContent = Math.round(val * 100) + '%';
+  updateCropperTransform();
+}
+
+function rotateCropperImage() {
+  AdminState.cropperState.rotation = (AdminState.cropperState.rotation + 90) % 360;
+  updateCropperTransform();
+}
+
+function resetCropperTransform() {
+  AdminState.cropperState.zoom = 1;
+  AdminState.cropperState.rotation = 0;
+  AdminState.cropperState.pan = { x: 0, y: 0 };
+  document.getElementById('cropperZoomSlider').value = 1;
+  document.getElementById('cropperZoomLabel').textContent = '100%';
+  updateCropperTransform();
+}
+
+function updateCropperTransform() {
+  const img = document.getElementById('cropperSourceImg');
+  const { zoom, rotation, pan } = AdminState.cropperState;
+  img.style.transform = `translate(${pan.x}px, ${pan.y}px) rotate(${rotation}deg) scale(${zoom})`;
+}
+
+function repositionCropperFrame() {
+  const vp = document.getElementById('cropperViewport');
+  const frame = document.getElementById('cropperFrame');
+  const ratio = AdminState.cropperState.aspectRatio;
+
+  const vpW = vp.clientWidth || 600;
+  const vpH = vp.clientHeight || 380;
+  const pad = 30;
+
+  let effectiveRatio = ratio;
+  if (ratio === 0 && cropperImgObj && cropperImgObj.naturalWidth) {
+    effectiveRatio = cropperImgObj.naturalWidth / cropperImgObj.naturalHeight;
+  } else if (!effectiveRatio) {
+    effectiveRatio = 1;
+  }
+
+  const maxW = vpW - pad * 2;
+  const maxH = vpH - pad * 2;
+
+  let fW, fH;
+  if (maxW / maxH > effectiveRatio) {
+    fH = maxH;
+    fW = fH * effectiveRatio;
+  } else {
+    fW = maxW;
+    fH = fW / effectiveRatio;
+  }
+
+  frame.style.width = Math.round(fW) + 'px';
+  frame.style.height = Math.round(fH) + 'px';
+  frame.style.left = Math.round((vpW - fW) / 2) + 'px';
+  frame.style.top = Math.round((vpH - fH) / 2) + 'px';
+}
+
+function setupCropperDragEvents() {
+  const vp = document.getElementById('cropperViewport');
+  vp.onmousedown = (e) => {
+    e.preventDefault();
+    cropperDrag.isDragging = true;
+    cropperDrag.startX = e.clientX - AdminState.cropperState.pan.x;
+    cropperDrag.startY = e.clientY - AdminState.cropperState.pan.y;
+    vp.style.cursor = 'grabbing';
+  };
+
+  window.onmousemove = (e) => {
+    if (!cropperDrag.isDragging) return;
+    AdminState.cropperState.pan.x = e.clientX - cropperDrag.startX;
+    AdminState.cropperState.pan.y = e.clientY - cropperDrag.startY;
+    updateCropperTransform();
+  };
+
+  window.onmouseup = () => {
+    cropperDrag.isDragging = false;
+    vp.style.cursor = 'grab';
+  };
+
+  vp.onwheel = (e) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.08 : -0.08;
+    const newZoom = Math.min(3, Math.max(0.6, AdminState.cropperState.zoom + delta));
+    updateCropperZoom(parseFloat(newZoom.toFixed(2)));
+    document.getElementById('cropperZoomSlider').value = newZoom;
+  };
+}
+
+async function applyAndSaveCroppedImage() {
+  if (!cropperImgObj) return;
+  const frame = document.getElementById('cropperFrame');
+  const cropW = frame.clientWidth;
+  const cropH = frame.clientHeight;
+  const { zoom, rotation, pan } = AdminState.cropperState;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = 1200;
+  canvas.height = Math.round(1200 * (cropH / cropW));
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const scaleMult = canvas.width / cropW;
+  ctx.translate(canvas.width / 2, canvas.height / 2);
+  ctx.translate(pan.x * scaleMult, pan.y * scaleMult);
+  ctx.rotate((rotation * Math.PI) / 180);
+
+  const drawW = cropperImgObj.naturalWidth * zoom * scaleMult;
+  const drawH = cropperImgObj.naturalHeight * zoom * scaleMult;
+  ctx.drawImage(cropperImgObj, -drawW / 2, -drawH / 2, drawW, drawH);
+
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], `curecare_cropped_${Date.now()}.jpg`, { type: 'image/jpeg' });
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${AdminState.token}` },
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        const targetIdx = AdminState.cropperState.targetIndex;
+        if (targetIdx !== null && targetIdx !== undefined) {
+          AdminState.editingGallery[targetIdx] = data.url;
+        } else {
+          AdminState.editingGallery.push(data.url);
+        }
+        if (targetIdx === 0 || !AdminState.editingPrimaryImage) {
+          AdminState.editingPrimaryImage = data.url;
+        }
+        renderEditGallery();
+        closeCropperModal();
+      } else {
+        alert('ক্রপ করা ছবি সেভ করা যায়নি');
+      }
+    } catch (e) {
+      alert('আপলোডে সমস্যা হয়েছে');
+    }
+  }, 'image/jpeg', 0.92);
+}
+
+function skipCroppingAndUseOriginal() {
+  closeCropperModal();
+}
+
+// -------------------------------------------------------------
+// Save Status Notification Popup & Dynamic Reactive Buttons
+// -------------------------------------------------------------
+let savePopupTimer = null;
+
+function showSaveStatusPopup(status, message, onRetry = null) {
+  const container = document.getElementById('saveStatusPopup');
+  const card = document.getElementById('savePopupCard');
+  const iconBox = document.getElementById('savePopupIconBox');
+  const title = document.getElementById('savePopupTitle');
+  const msg = document.getElementById('savePopupMessage');
+  const retryBox = document.getElementById('savePopupRetryBox');
+  const line = document.getElementById('savePopupProgressLine');
+
+  if (savePopupTimer) clearTimeout(savePopupTimer);
+
+  container.style.display = 'block';
+  card.className = `save-popup-card status-${status}`;
+
+  if (status === 'saving') {
+    iconBox.innerHTML = `<span>⏳</span>`;
+    title.textContent = 'তথ্য সংরক্ষণ করা হচ্ছে...';
+    msg.textContent = message || 'অনুগ্রহ করে অপেক্ষা করুন, ডাটাবেস আপডেট হচ্ছে...';
+    retryBox.style.display = 'none';
+    line.style.animation = 'pulseLine 1.5s infinite';
+  } else if (status === 'success') {
+    const time = new Date().toLocaleTimeString();
+    iconBox.innerHTML = `<span>✓</span>`;
+    title.textContent = 'সফলভাবে সংরক্ষিত হয়েছে!';
+    msg.textContent = message || `সব তথ্য ডাটাবেসে সফলভাবে আপডেট করা হয়েছে (${time})।`;
+    retryBox.style.display = 'none';
+    line.style.animation = 'shrinkLine 4s linear forwards';
+
+    savePopupTimer = setTimeout(() => {
+      hideSaveStatusPopup();
+    }, 4000);
+  } else if (status === 'error') {
+    iconBox.innerHTML = `<span>⚠️</span>`;
+    title.textContent = 'সংরক্ষণ ব্যর্থ হয়েছে!';
+    msg.textContent = message || 'সার্ভারে তথ্য সংরক্ষণ করা সম্ভব হয়নি।';
+    retryBox.style.display = onRetry ? 'block' : 'none';
+    line.style.animation = 'none';
+    line.style.background = '#ef4444';
+  }
+}
+
+function hideSaveStatusPopup() {
+  document.getElementById('saveStatusPopup').style.display = 'none';
+}
+
+// Save Product Details with Reactive Dynamic Button States
 async function saveProductDetails(e) {
-  e.preventDefault();
+  if (e) e.preventDefault();
+
+  const btn = document.getElementById('editSaveSubmitBtn');
+  const btnIcon = document.getElementById('editSaveBtnIcon');
+  const btnText = document.getElementById('editSaveBtnText');
+
+  // Trigger 'Saving' state
+  if (btn) {
+    btn.disabled = true;
+    btn.style.background = '#0f766e';
+    btnIcon.textContent = '⏳';
+    btnText.textContent = 'সংরক্ষণ হচ্ছে...';
+  }
+  showSaveStatusPopup('saving', 'পণ্যের গ্যালারি ও বিবরণ ডাটাবেসে সেভ হচ্ছে...');
 
   const id = document.getElementById('editProdId').value;
   const name = document.getElementById('editProdNameEn').value.trim();
@@ -646,7 +1054,7 @@ async function saveProductDetails(e) {
   const short_desc = document.getElementById('editProdShortDesc').value.trim();
   const description = document.getElementById('editProdDesc').value.trim();
 
-  // Validate gallery has at least 1 image
+  // Validate gallery
   const primaryImage = AdminState.editingPrimaryImage || (AdminState.editingGallery[0] || null);
   const additionalImages = AdminState.editingGallery.filter(url => url !== primaryImage);
 
@@ -676,17 +1084,42 @@ async function saveProductDetails(e) {
       headers: authHeaders(),
       body: JSON.stringify(payload)
     });
+
     if (res.ok) {
-      alert('পণ্যের বিস্তারিত তথ্য ও গ্যালারি সফলভাবে সংরক্ষিত হয়েছে!');
-      closeEditProductModal();
-      loadProducts();
+      if (btn) {
+        btn.style.background = '#10b981';
+        btnIcon.textContent = '✓';
+        btnText.textContent = 'সফলভাবে সংরক্ষিত!';
+      }
+      showSaveStatusPopup('success', 'পণ্যের সকল তথ্য, গ্যালারি ও ভেরিয়েশন সফলভাবে আপডেট হয়েছে!');
+      setTimeout(() => {
+        if (btn) {
+          btn.disabled = false;
+          btn.style.background = '';
+          btnIcon.textContent = '💾';
+          btnText.textContent = 'পরিবর্তন সংরক্ষণ করুন (Save All Details)';
+        }
+        closeEditProductModal();
+        loadProducts();
+      }, 900);
     } else {
       const err = await res.json();
-      alert(err.error || 'পণ্য আপডেট করা সম্ভব হয়নি');
+      if (btn) {
+        btn.disabled = false;
+        btn.style.background = '#ef4444';
+        btnIcon.textContent = '⚠️';
+        btnText.textContent = 'ব্যর্থ - পুনরায় চেষ্টা করুন';
+      }
+      showSaveStatusPopup('error', err.error || 'সংরক্ষণ ব্যর্থ হয়েছে', () => saveProductDetails());
     }
   } catch (err) {
-    console.error('Error saving product details:', err);
-    alert('সার্ভার এরর: তথ্য আপডেট করা সম্ভব হয়নি');
+    if (btn) {
+      btn.disabled = false;
+      btn.style.background = '#ef4444';
+      btnIcon.textContent = '⚠️';
+      btnText.textContent = 'ব্যর্থ - পুনরায় চেষ্টা করুন';
+    }
+    showSaveStatusPopup('error', err.message, () => saveProductDetails());
   }
 }
 
@@ -694,6 +1127,7 @@ async function deleteProduct(id) {
   if (!confirm('আপনি কি নিশ্চিত এই পণ্যটি ডিলিট করতে চান?')) return;
   try {
     await fetch(`/api/admin/products/${id}`, { method: 'DELETE', headers: authHeaders() });
+    showSaveStatusPopup('success', 'পণ্য সফলভাবে মুছে ফেলা হয়েছে');
     loadProducts();
   } catch (err) {
     alert('পণ্য ডিলিট করা যায়নি');

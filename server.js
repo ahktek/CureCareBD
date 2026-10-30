@@ -678,6 +678,50 @@ app.put('/api/admin/products/:id', authenticateAdmin, (req, res) => {
   }
 });
 
+// Quick toggle product active status
+app.patch('/api/admin/products/:id/toggle-status', authenticateAdmin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const current = db.prepare('SELECT is_active FROM products WHERE id = ?').get(id);
+    if (!current) return res.status(404).json({ error: 'Product not found' });
+    const newStatus = current.is_active ? 0 : 1;
+    db.prepare('UPDATE products SET is_active = ? WHERE id = ?').run(newStatus, id);
+    res.json({ success: true, is_active: newStatus });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Quick edit product (fast update for price, stock, status)
+app.patch('/api/admin/products/:id/quick-edit', authenticateAdmin, (req, res) => {
+  try {
+    const { id } = req.params;
+    const { base_price, discount_price, stock, is_active, is_featured, category_id } = req.body;
+    db.prepare(`
+      UPDATE products SET
+        base_price = COALESCE(?, base_price),
+        discount_price = ?,
+        stock = COALESCE(?, stock),
+        is_active = COALESCE(?, is_active),
+        is_featured = COALESCE(?, is_featured),
+        category_id = COALESCE(?, category_id)
+      WHERE id = ?
+    `).run(
+      base_price !== undefined ? parseFloat(base_price) : null,
+      discount_price !== undefined && discount_price !== '' ? parseFloat(discount_price) : null,
+      stock !== undefined ? parseInt(stock) : null,
+      is_active !== undefined ? (is_active ? 1 : 0) : null,
+      is_featured !== undefined ? (is_featured ? 1 : 0) : null,
+      category_id !== undefined ? parseInt(category_id) : null,
+      id
+    );
+    const updated = db.prepare('SELECT * FROM products WHERE id = ?').get(id);
+    res.json(formatProductRecord(updated));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.delete('/api/admin/products/:id', authenticateAdmin, (req, res) => {
   try {
     db.prepare('DELETE FROM products WHERE id = ?').run(req.params.id);
